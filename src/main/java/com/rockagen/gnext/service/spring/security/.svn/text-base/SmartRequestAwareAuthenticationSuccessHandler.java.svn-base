@@ -1,0 +1,79 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+import java.io.IOException;
+import java.util.Date;
+
+import javax.annotation.Resource;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.teamZF.onepay.model.po.AdminUser;
+import org.teamZF.onepay.service.IAdminUserServ;
+
+/**
+ * <b>SPIRING SECURITY 3.X 认证成功处理类封转</b>
+ * 
+ *  
+ * 
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-6-10 下午5:19:23
+ * @history
+ * 
+ */
+public class SmartRequestAwareAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
+	
+	//~ Instance fields ==================================================
+	
+	/**
+	 * 服务
+	 */
+	private IAdminUserServ adminUserServ;
+
+	//~ Methods ==================================================
+
+	/**
+	 * 重写onAuthenticationSuccess方法,实现锁定用户功能
+	 * @see org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler#onAuthenticationSuccess(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.security.core.Authentication)
+	 */
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+			Authentication authentication) throws ServletException, IOException {
+		super.onAuthenticationSuccess(request, response, authentication);
+		handlerLocked(request.getParameter(UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY));
+	}
+	
+	
+	/**
+	 * 处理是否锁定逻辑
+	 * 
+	 * @param userId
+	 *            登录号
+	 */
+	private void handlerLocked(String userId) {
+
+		AdminUser user = adminUserServ.getAdminUser(userId);
+		// 错误次数清零
+		user.setError_count(0);
+		user.setStateTime(new Date());
+		adminUserServ.save(user);
+	}
+
+
+	@Resource
+	public void setAdminUserServ(IAdminUserServ adminUserServ) {
+		this.adminUserServ = adminUserServ;
+	}
+	
+
+}

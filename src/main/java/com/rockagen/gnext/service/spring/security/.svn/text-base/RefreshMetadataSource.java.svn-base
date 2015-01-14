@@ -1,0 +1,59 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+import javax.servlet.ServletContext;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+/**
+ * <b>刷新资源权限信息</b>
+ * 由于SPRING SECURITY 3.x中的权限信息是在服务器启动时加载在SERVLETCONTEXT里,所以在这里定义一个刷新SERVLETCONTEXT的方法
+ *  
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-3-26 下午11:26:43
+ * @history
+ * 
+ */
+public class RefreshMetadataSource {
+
+    
+    //~ Instance fields ==================================================
+	
+    private static final Log logger = LogFactory.getLog(RefreshMetadataSource.class);
+    /**
+     * ServletContext 
+     */
+	private ServletContext servletContext;
+	
+	
+	//~ Methods ==================================================
+	
+	/**
+	 * 刷新FilterInvocationSecurityMetadataSource
+	 */
+	public  void refresh(){
+		ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+		FilterInvocationSecurityMetadataSource fisms = (FilterInvocationSecurityMetadataSource) ctx
+				.getBean("securityMetadataSource");
+		//  实例化一个新的 FilterSecurityInterceptor
+		FilterSecurityInterceptor fsi = (FilterSecurityInterceptor) ctx.getBean("filterSecurityInterceptor");
+		// 给FilterSecurityInterceptor下的securityMetadataSource赋新值
+		fsi.setSecurityMetadataSource(fisms);
+		logger.info(" SecurityMetadataSourc updating ....");
+	}
+	
+	public void setServletContext(ServletContext servletContext) {
+		this.servletContext = servletContext;
+	}
+}

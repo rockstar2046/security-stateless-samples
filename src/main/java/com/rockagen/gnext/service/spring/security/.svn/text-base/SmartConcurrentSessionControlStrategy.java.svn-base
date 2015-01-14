@@ -1,0 +1,276 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.context.MessageSource;
+import org.springframework.context.MessageSourceAware;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.SpringSecurityMessageSource;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.web.authentication.session.SessionAuthenticationException;
+import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
+import org.springframework.util.Assert;
+
+/**
+ * <b>控制SESSION在浏览器以外关闭不能登录解决类</b>
+ * 
+ *  
+ * 
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-3-26 下午11:18:10
+ * @history
+ * 
+ */
+public class SmartConcurrentSessionControlStrategy extends SessionFixationProtectionStrategy implements
+		MessageSourceAware {
+
+	// ~ Instance fields ==================================================
+
+	/**
+	 * 国际化信息
+	 */
+	protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+	/**
+	 * SESSION注册
+	 */
+	private SessionRegistry sessionRegistry;
+	/**
+	 * 超出登录数量是否抛出异常
+	 */
+	private boolean exceptionIfMaximumExceeded = false;
+	/**
+	 * 最大SESSION
+	 */
+	private int maximumSessions = 1;
+	/**
+	 * 最大SESSION有效期,以秒为单位 是20分钟
+	 */
+	private int maxInactiveInterval = 1200;
+
+	// ~ Constructors ==================================================
+
+	public SmartConcurrentSessionControlStrategy() {
+		super.setAlwaysCreateSession(true);
+		this.sessionRegistry = new SmartSessionRegistry();
+	}
+
+	/**
+	 * 构造sessionRegistry
+	 * 
+	 * @param sessionRegistry
+	 */
+	public SmartConcurrentSessionControlStrategy(SessionRegistry sessionRegistry) {
+		Assert.notNull(sessionRegistry, "The sessionRegistry cannot be null");
+		super.setAlwaysCreateSession(true);
+		this.sessionRegistry = sessionRegistry;
+	}
+
+	// ~ Methods ==================================================
+
+	@Override
+	public void onAuthentication(Authentication authentication, javax.servlet.http.HttpServletRequest request,
+			javax.servlet.http.HttpServletResponse response) {
+		Assert.notNull(authentication, "Authentication cannot be null (violation of interface contract)");
+		checkAuthenticationAllowed(authentication, request);
+		// Set SecurityContextHolder 's Authentication
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		// Allow the parent to create a new session if necessary
+		super.onAuthentication(authentication, request, response);
+		request.getSession().setMaxInactiveInterval(maxInactiveInterval);
+		// TODO
+		//request.getSession().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+	}
+
+	private void checkAuthenticationAllowed(Authentication authentication, HttpServletRequest request)
+			throws AuthenticationException {
+
+		SmartPrincipal smartPrincipal = new SmartPrincipal(authentication);
+
+		final List<SessionInformation> sessions = sessionRegistry.getAllSessions(smartPrincipal, false);
+		// TODO
+//		for (SessionInformation si : sessions) {
+//			System.out.println(si.getSessionId() + "#########" + si.isExpired());
+//		}
+
+		int sessionCount = sessions.size();
+		int allowedSessions = getMaximumSessionsForThisUser(authentication);
+		Assert.isTrue(allowedSessions != 0, "getMaximumSessionsForThisUser() must return either -1 to allow "
+				+ "unlimited logins, or a positive integer to specify a maximum");
+		if (sessionCount < allowedSessions) {
+			// They haven't got too many login sessions running at present
+			return;
+		}
+
+		if (allowedSessions == -1) {
+			// We permit unlimited logins
+			return;
+		}
+
+		if (sessionCount == allowedSessions) {
+			HttpSession session = request.getSession(false);
+
+			if (session != null) {
+				// Only permit it though if this request is associated with one
+				// of the already registered sessions
+				for (SessionInformation si : sessions) {
+					if (si.getSessionId().equals(session.getId())) {
+						return;
+					}
+				}
+			}
+			// If the session is null, a new one will be created by the parent
+			// class, exceeding the allowed number
+		}
+
+		//
+		// verify the ip value in the smartPrincipal
+		//
+		boolean sameIp = false;
+		List<Object> allPrincipals = ((SmartSessionRegistry) sessionRegistry).getAllPrincipals(smartPrincipal);
+
+		for (Object savedPrincipal : allPrincipals) {
+			if (smartPrincipal.equals(savedPrincipal)) {
+				sameIp = smartPrincipal.equalsIp((SmartPrincipal) savedPrincipal);
+
+				break;
+			}
+		}
+		allowableSessionsExceeded(sessions, allowedSessions, sameIp, sessionRegistry);
+	}
+
+	protected void allowableSessionsExceeded(java.util.List<SessionInformation> sessions, int allowableSessions,
+			boolean sameIp, SessionRegistry registry) throws SessionAuthenticationException {
+		// new IP handle
+		if (!sameIp) {
+			// deny login if exceptionIfMaximumExceeded
+			if (exceptionIfMaximumExceeded || (sessions == null)) {
+				throw new SessionAuthenticationException(messages.getMessage(
+						"ConcurrentSessionControllerImpl.exceededAllowed",
+						new Object[] { new Integer(allowableSessions) },
+						"Maximum sessions of {0} for this principal exceeded"));
+			}
+		}
+		// Determine least recently used session, and mark it for invalidation
+		SessionInformation leastRecentlyUsed = null;
+
+		for (int i = 0; i < sessions.size(); i++) {
+			if ((leastRecentlyUsed == null)
+					|| sessions.get(i).getLastRequest().before(leastRecentlyUsed.getLastRequest())) {
+				leastRecentlyUsed = sessions.get(i);
+			}
+		}
+
+		if (sessions.size() > allowableSessions && !sameIp) {
+
+			SmartPrincipal smartPrincipal = (SmartPrincipal) leastRecentlyUsed.getPrincipal();
+
+			for (int i = 0; i < sessions.size(); i++) {
+				if (sessions.get(i).getPrincipal().equals(leastRecentlyUsed.getPrincipal())) {
+					if (smartPrincipal.equalsIp((SmartPrincipal) (sessions.get(i).getPrincipal()))) {
+						sessions.get(i).expireNow();
+						// TODO
+						//((SmartSessionRegistry) registry).expireNowSessionInformation(sessions.get(i).getSessionId());
+					}
+				}
+			}
+			leastRecentlyUsed.expireNow();
+			// TODO
+			//((SmartSessionRegistry) registry).expireNowSessionInformation(leastRecentlyUsed.getSessionId());
+		} else if (!sameIp) {
+			leastRecentlyUsed.expireNow();
+			// TODO
+			//((SmartSessionRegistry) registry).expireNowSessionInformation(leastRecentlyUsed.getSessionId());
+		} else {
+			// TODO
+		}
+
+	}
+
+	/**
+	 * Method intended for use by subclasses to override the maximum number of
+	 * sessions that are permitted for a particular authentication. The default
+	 * implementation simply returns the <code>maximumSessions</code> value for
+	 * the bean.
+	 * 
+	 * @param authentication
+	 *            to determine the maximum sessions for
+	 * 
+	 * @return either -1 meaning unlimited, or a positive integer to limit
+	 *         (never zero)
+	 */
+	protected int getMaximumSessionsForThisUser(Authentication authentication) {
+		return maximumSessions;
+	}
+
+	@Override
+	protected void onSessionChange(String originalSessionId, HttpSession newSession, Authentication auth) {
+		// Update the session registry
+		SmartPrincipal smartPrincipal = new SmartPrincipal(auth);
+		sessionRegistry.removeSessionInformation(originalSessionId);
+		sessionRegistry.registerNewSession(newSession.getId(), smartPrincipal);
+	}
+
+	/**
+	 * Sets the <tt>exceptionIfMaximumExceeded</tt> property, which determines
+	 * whether the user should be prevented from opening more sessions than
+	 * allowed. If set to <tt>true</tt>, a
+	 * <tt>SessionAuthenticationException</tt> will be raised.
+	 * 
+	 * @param exceptionIfMaximumExceeded
+	 *            defaults to <tt>false</tt>.
+	 */
+	public void setExceptionIfMaximumExceeded(boolean exceptionIfMaximumExceeded) {
+		this.exceptionIfMaximumExceeded = exceptionIfMaximumExceeded;
+	}
+
+	/**
+	 * Sets the <tt>maxSessions</tt> property. The default value is 1. Use -1
+	 * for unlimited sessions.
+	 * 
+	 * @param maximumSessions
+	 *            the maximimum number of permitted sessions a user can have
+	 *            open simultaneously.
+	 */
+	public void setMaximumSessions(int maximumSessions) {
+		Assert.isTrue(maximumSessions != 0,
+				"MaximumLogins must be either -1 to allow unlimited logins, or a positive integer to specify a maximum");
+		this.maximumSessions = maximumSessions;
+	}
+
+	public void setMessageSource(MessageSource messageSource) {
+		this.messages = new MessageSourceAccessor(messageSource);
+	}
+
+	@Override
+	public final void setAlwaysCreateSession(boolean alwaysCreateSession) {
+		if (!alwaysCreateSession) {
+			throw new IllegalArgumentException("Cannot set alwaysCreateSession to false when concurrent session "
+					+ "control is required");
+		}
+	}
+
+	/**
+	 * @param maxInactiveInterval
+	 *            the maxInactiveInterval to set
+	 */
+	public void setMaxInactiveInterval(int maxInactiveInterval) {
+		if (maxInactiveInterval > 0) {
+			this.maxInactiveInterval = maxInactiveInterval * 60;
+		}
+	}
+
+}

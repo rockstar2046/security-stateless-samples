@@ -1,0 +1,149 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.Assert;
+
+/**
+ * <b>定义SESSION控制策略</b>
+ * 通过用户名和当前IP地址判断,如果IP和上一个SESSION的IP相同,则注销当前SESSION,重新注册一个<b> 注册SESSION见
+ * {@link SmartSessionRegistry #registerNewSession(String, Object)}
+ * 
+ *  
+ * 
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-3-26 下午11:19:15
+ * @history
+ * 
+ */
+public class SmartPrincipal {
+
+	// ~ Instance fields ==================================================
+
+	/**
+	 * 登录用户名
+	 */
+	private String username;
+	/**
+	 * 登录IP
+	 */
+	private String ip;
+	private String sessionId;
+	private Object principal;
+	private Date loginDate;// 登录时间，用来算时常
+
+	// ~ Constructors ==================================================
+
+	/**
+	 * authentication赋值
+	 * 
+	 * @param authentication
+	 */
+	public SmartPrincipal(Authentication authentication) {
+		Assert.notNull(authentication, "authentication cannot be null (violation of interface contract)");
+
+		String username = null;
+
+		if (authentication.getPrincipal() instanceof UserDetails) {
+			username = ((UserDetails) authentication.getPrincipal()).getUsername();
+		} else {
+			username = (String) authentication.getPrincipal();
+		}
+		this.principal = authentication.getPrincipal();
+
+		String ip = ((SmartWebAuthenticationDetails) authentication.getDetails()).getRemoteAddress();
+		this.username = username;
+		this.ip = ip;
+	}
+
+	public Object getPrincipal() {
+		return principal;
+	}
+
+	// ~ Methods ==================================================
+
+	/**
+	 * 判断IP是否一致
+	 * 
+	 * @param smartPrincipal
+	 * @return
+	 */
+	public boolean equalsIp(SmartPrincipal smartPrincipal) {
+		return this.ip.equals(smartPrincipal.getIp());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof SmartPrincipal) {
+			SmartPrincipal smartPrincipal = (SmartPrincipal) obj;
+			return username.equals(smartPrincipal.getUsername());
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		 int code = 17654;
+
+	            code = code * (username.hashCode() % 7);
+		  return code;
+	}
+
+	@Override
+	public String toString() {
+		return "SmartPrincipal:{username=" + username + ",ip=" + ip + "}";
+	}
+	
+	public String getDuration() {
+        String pattern="mm分ss秒";
+        long duration=System.currentTimeMillis()-loginDate.getTime();
+        
+        SimpleDateFormat sdf=new SimpleDateFormat(pattern);
+        String time=sdf.format(new Date(duration));
+        return time;
+      }
+
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
+
+	public void setLoginDate(Date date) {
+		this.loginDate = date;
+	}
+
+	public Date getLoginDate() {
+		return this.loginDate;
+	}
+}

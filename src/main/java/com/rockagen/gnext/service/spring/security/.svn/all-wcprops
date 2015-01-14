@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security
+END
+SmartConcurrentSessionControlStrategy.java
+K 25
+svn:wc:ra_dav:version-url
+V 171
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartConcurrentSessionControlStrategy.java
+END
+SmartSessionRegistry.java
+K 25
+svn:wc:ra_dav:version-url
+V 154
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartSessionRegistry.java
+END
+SmartUser.java
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartUser.java
+END
+Resource.java
+K 25
+svn:wc:ra_dav:version-url
+V 142
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/Resource.java
+END
+SmartPrincipal.java
+K 25
+svn:wc:ra_dav:version-url
+V 148
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartPrincipal.java
+END
+SmartWebAuthenticationDetails.java
+K 25
+svn:wc:ra_dav:version-url
+V 163
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartWebAuthenticationDetails.java
+END
+JdbcFilterInvocationSecurityMetadataSourceFactoryBean.java
+K 25
+svn:wc:ra_dav:version-url
+V 187
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/JdbcFilterInvocationSecurityMetadataSourceFactoryBean.java
+END
+messages_zh_CN.properties
+K 25
+svn:wc:ra_dav:version-url
+V 154
+/svn/ONEPAY/!svn/ver/504/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/messages_zh_CN.properties
+END
+AuthenticationValidateCodeException.java
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/AuthenticationValidateCodeException.java
+END
+SmartRequestAwareAuthenticationSuccessHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 179
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartRequestAwareAuthenticationSuccessHandler.java
+END
+SmartWebAuthenticationDetailsSource.java
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartWebAuthenticationDetailsSource.java
+END
+ValidateCodeUsernamePasswordAuthenticationFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 182
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/ValidateCodeUsernamePasswordAuthenticationFilter.java
+END
+SmartUrlAuthenticationFailureHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 170
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartUrlAuthenticationFailureHandler.java
+END
+SmartJdbcDaoImpl.java
+K 25
+svn:wc:ra_dav:version-url
+V 150
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/SmartJdbcDaoImpl.java
+END
+RefreshMetadataSource.java
+K 25
+svn:wc:ra_dav:version-url
+V 155
+/svn/ONEPAY/!svn/ver/784/trunk/src/%E6%BA%90%E4%BB%A3%E7%A0%81/ONE_PAY/20120121/tp/MANAGER/src/org/teamZF/onepay/spring/security/RefreshMetadataSource.java
+END

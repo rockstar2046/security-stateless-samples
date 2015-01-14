@@ -1,0 +1,53 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+/**
+ * <b>Spring Security 动态刷新securityMetadataSource包装类</b>
+ * 
+ *  
+ * 
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-3-26 下午10:48:15
+ * @history
+ * 
+ */
+public class Resource {
+
+	// ~ Instance fields ==================================================
+
+	/**
+	 * 资源url
+	 */
+	private String url;
+	/**
+	 * 权限
+	 */
+	private String role;
+
+	//~ Constructors ==================================================
+	
+	/**
+	 * @param url
+	 * @param role
+	 */
+	public Resource(String url, String role) {
+		this.url = url;
+		this.role = role;
+	}
+	
+	//Getters and Setters ...
+
+	public String getUrl() {
+		return url;
+	}
+
+	public String getRole() {
+		return role;
+	}
+}

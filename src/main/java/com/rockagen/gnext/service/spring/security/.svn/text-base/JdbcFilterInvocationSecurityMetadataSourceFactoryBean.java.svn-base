@@ -1,0 +1,145 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
+import org.springframework.jdbc.object.MappingSqlQuery;
+import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.access.SecurityConfig;
+import org.springframework.security.web.access.intercept.DefaultFilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.util.AntPathRequestMatcher;
+import org.springframework.security.web.util.RequestMatcher;
+
+
+/**
+ * <b>自定义SPRING SECURITY 3.X 资源</b>
+ * 实现FactoryBean的getObject返回自己定义好的的动态资源
+ *  
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-3-27 下午3:06:53
+ * @history
+ * 
+ */
+public class JdbcFilterInvocationSecurityMetadataSourceFactoryBean extends JdbcDaoSupport implements
+		FactoryBean<FilterInvocationSecurityMetadataSource> {
+	
+    private static final Log logger = LogFactory.getLog(JdbcFilterInvocationSecurityMetadataSourceFactoryBean.class);
+    /**
+     * 查询语句
+     */
+	private String resourceQuery;
+
+	public boolean isSingleton() {
+		return false;
+	}
+
+	public Class<?> getObjectType() {
+		return FilterInvocationSecurityMetadataSource.class;
+	}
+
+	/**
+	 * 入口：把自定义的资源传给DefaultFilterInvocationSecurityMetadataSource
+	 * 
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
+	@Override
+	public FilterInvocationSecurityMetadataSource getObject() {
+		logger.info("###### new DefaultFilterInvocationSecurityMetadataSource ######");
+		return new DefaultFilterInvocationSecurityMetadataSource(buildRequestMap());
+
+	}
+
+	// ~ Methods ==================================================
+
+	/**
+	 * eg: /aaa/a.jsp ---> ROLE_ADMIN,ROLE_USER
+	 * 
+	 * @return resourceMap
+	 */
+	protected Map<String, String> findResources() {
+		ResourceMapping resourceMapping = new ResourceMapping(getDataSource(), resourceQuery);
+
+		Map<String, String> resourceMap = new LinkedHashMap<String, String>();
+
+		List<Resource> executeListSource = resourceMapping.execute();
+
+		for (Resource resource : executeListSource) {
+			String url = resource.getUrl();
+			String role = resource.getRole();
+
+			if (resourceMap.containsKey(url)) {
+				String value = resourceMap.get(url);
+				resourceMap.put(url, value + "," + role);
+			} else {
+				resourceMap.put(url, role);
+			}
+		}
+
+		return resourceMap;
+	}
+
+	/**
+	 * <pre>
+	 * eg: /aaa/foo.jsp ---- List<ConfigAttribute) list
+	 * </pre>
+	 * <p>
+	 * the list is ROLE_ADMIN,ROLE_USER ....
+	 * </p>
+	 * <br>
+	 * 
+	 * @return A linkedHashMap
+	 */
+	protected LinkedHashMap<RequestMatcher, Collection<ConfigAttribute>> buildRequestMap() {
+		LinkedHashMap<RequestMatcher, Collection<ConfigAttribute>> requestMap = null;
+		requestMap = new LinkedHashMap<RequestMatcher, Collection<ConfigAttribute>>();
+
+		Map<String, String> resourceMap = this.findResources();
+
+		for (Map.Entry<String, String> entry : resourceMap.entrySet()) {
+			RequestMatcher key =new AntPathRequestMatcher(entry.getKey());
+			requestMap.put(key, SecurityConfig.createListFromCommaDelimitedString(entry.getValue()));
+		}
+
+		return requestMap;
+	}
+
+	public void setResourceQuery(String resourceQuery) {
+		this.resourceQuery = resourceQuery;
+	}
+
+	// 内部类：实现SQL查询,返回每一行
+	private class ResourceMapping extends MappingSqlQuery<Resource> {
+		protected ResourceMapping(DataSource dataSource, String resourceQuery) {
+			super(dataSource, resourceQuery);
+			compile();
+		}
+
+		@Override
+		protected Resource mapRow(ResultSet rs, int rownum) throws SQLException {
+			String url = rs.getString(1);
+			String role = rs.getString(2);
+			Resource resource = new Resource(url, role);
+
+			return resource;
+		}
+	}
+
+}

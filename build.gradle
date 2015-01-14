@@ -1,0 +1,98 @@
+description = 'security-stateless-samples'
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.akhikhl.gretty:gretty:+'
+    }
+}
+
+repositories {
+
+    jcenter()
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'findbugs'
+apply plugin: 'war'
+apply plugin: 'org.akhikhl.gretty'
+
+group = 'com.rockagen'
+version = '0.0.1-SNAPSHOT'
+
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+compileTestJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+ext {
+    commonslibVersion = '0.1.7-RELEASE'
+    springVersion = '4.1.4.RELEASE'
+    springSecurityVersion = '3.2.5.RELEASE'
+    springDataMongodb= '1.6.1.RELEASE'
+    hibernateVersion = '4.3.8.Final'
+    validatorVersion='5.1.3.Final'
+    aspectjVersion = '1.8.4'
+    druidVersion = '1.0.11'
+    postgresqlVersion = '9.3-1102-jdbc41'
+    servletVersion = '3.1.0'
+    junitVersion = '4.12'
+    groovyVersion = '2.3.9'
+    ehcacheVersion='2.9.0'
+    javaElVersion='3.0.0'
+}
+
+
+dependencies {
+    compile group: "org.codehaus.groovy", name: "groovy-all", version: "${groovyVersion}"
+    compile group: "com.rockagen", name: "commons-lib", version: "${commonslibVersion}"
+    compile group: "org.springframework", name: "spring-context", version: "${springVersion}"
+    compile group: "org.springframework", name: "spring-context-support", version: "${springVersion}"
+    compile group: "org.springframework", name: "spring-web", version: "${springVersion}"
+    compile group: "org.springframework", name: "spring-webmvc", version: "${springVersion}"
+    compile group: "org.springframework", name: "spring-jdbc", version: "${springVersion}"
+    compile group: "org.springframework", name: "spring-orm", version: "${springVersion}"
+    compile group: "org.springframework.data", name: "spring-data-mongodb", version: "${springDataMongodb}"
+    compile group: "org.springframework.security", name: "spring-security-web", version: "${springSecurityVersion}"
+    compile group: "org.springframework.security", name: "spring-security-config", version: "${springSecurityVersion}"
+    compile group: "org.springframework.security", name: "spring-security-aspects", version: "${springSecurityVersion}"
+    compile group: "org.springframework.security", name: "spring-security-crypto", version: "${springSecurityVersion}"
+    compile group: "org.hibernate", name: "hibernate-core", version: "${hibernateVersion}"
+    compile group: "org.hibernate", name: "hibernate-ehcache", version: "${hibernateVersion}"
+    compile group: "org.hibernate", name: "hibernate-validator", version: "${validatorVersion}"
+    compile group: "org.aspectj", name: "aspectjweaver", version: "${aspectjVersion}"
+    compile group: "net.sf.ehcache",name:"ehcache",version:"${ehcacheVersion}"
+    compile group: "com.alibaba", name: "druid", version: "${druidVersion}"
+    runtime group: "org.postgresql", name: "postgresql", version: "${postgresqlVersion}"
+    testCompile group: "junit", name: "junit", version: "${junitVersion}"
+    testCompile group: "org.springframework", name: "spring-test", version: "${springVersion}"
+    providedCompile group: "javax.servlet", name: "javax.servlet-api", version: "${servletVersion}"
+    providedCompile group: "javax.el", name: "javax.el-api", version: "${javaElVersion}"
+
+}
+
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+    ignoreFailures = true
+}
+
+gretty{
+    port=3000
+    contextPath="/"
+}

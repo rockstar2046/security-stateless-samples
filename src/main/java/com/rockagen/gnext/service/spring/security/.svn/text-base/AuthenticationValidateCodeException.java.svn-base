@@ -1,0 +1,46 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+import org.springframework.security.authentication.AuthenticationServiceException;
+
+/**Spring Security 3.x 验证码扩展异常</b>
+ *  
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-6-10 下午8:26:26
+ * @history
+ * 
+ */
+public class AuthenticationValidateCodeException extends AuthenticationServiceException{
+
+	
+	//~ Instance fields ==================================================
+	
+	private static final long serialVersionUID = 3860599772820074321L;
+	/**
+     * Constructs an <code>AuthenticationValidateCodeException</code> with the
+     * specified message.
+     *
+     * @param msg the detail message
+     */
+	public AuthenticationValidateCodeException(String msg) {
+		super(msg);
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+     * Constructs an <code>AuthenticationValidateCodeException</code> with the
+     * specified message and root cause.
+     *
+     * @param msg the detail message
+     * @param t root cause
+     */
+	  public AuthenticationValidateCodeException(String msg, Throwable t) {
+	        super(msg, t);
+	    }
+}

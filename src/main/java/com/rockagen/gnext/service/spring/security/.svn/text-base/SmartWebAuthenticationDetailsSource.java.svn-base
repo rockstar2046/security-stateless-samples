@@ -1,0 +1,37 @@
+/*
+ * %W% %E%
+ *
+ * Copyright (c) 2013, RIPPLETECH Inc. All rights reserved.
+ * RIPPLETECH PROPRIETARY/CONFIDENTIAL
+ */
+package org.teamZF.onepay.spring.security;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.security.authentication.AuthenticationDetailsSource;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+
+/**
+ * 
+/**
+ * Implementation of {@link AuthenticationDetailsSource} which builds the details object from
+ * an <tt>HttpServletRequest</tt> object, creating a {@code WebAuthenticationDetails}.
+ * 
+ * @author AGEN
+ * @version 1.0
+ * @date 2012-7-3 ÏÂÎç10:03:40
+ * @history
+ * 
+ */
+public class SmartWebAuthenticationDetailsSource implements AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> {
+
+	  //~ Methods ========================================================================================================
+
+    /**
+     * @param context the {@code HttpServletRequest} object.
+     * @return the {@code WebAuthenticationDetails} containing information about the current request
+     */
+    public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
+        return new SmartWebAuthenticationDetails(context);
+    }
+}
