@@ -20,6 +20,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -58,8 +59,7 @@ public class AuthRole {
 
 	@Version
 	private Long version;
-
-
+	
 	public Long getId() {
 		return id;
 	}
@@ -106,5 +106,34 @@ public class AuthRole {
 
 	public void setVersion(Long version) {
 		this.version = version;
+	}
+	
+
+	/**
+	 * Add resource  
+	 * @param res {@link AuthResource}
+	 */
+	public void addResource(AuthResource res){
+		if(res!=null){
+			checkResources();
+			resources.add(res);
+		}
+	}
+
+	/**
+	 * Add resource form role
+	 * @param role {@link AuthRole}
+	 */
+	public void addResourcesFromRole(AuthRole role) {
+		if(role!=null){
+			checkResources();
+			resources.addAll(role.getResources());
+		}
+	}
+	
+	private void checkResources(){
+		if(resources==null){
+			resources=new HashSet<>();
+		}
 	}
 }

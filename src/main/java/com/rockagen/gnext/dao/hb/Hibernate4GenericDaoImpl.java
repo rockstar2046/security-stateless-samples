@@ -159,9 +159,9 @@ extends BaseDao implements Hibernate4GenericDao<E, PK>{
 
 	@Override
 	public List<?> queryByCriteria(DetachedCriteria dcriteria,
-			final int firstResult, final int maxResults) {
+			final int start, final int count) {
 
-		List<?> list = createCriteria(dcriteria, firstResult, maxResults)
+		List<?> list = createCriteria(dcriteria, start, count)
 				.list();
 		return list;
 	}

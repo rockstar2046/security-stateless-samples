@@ -20,6 +20,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -104,5 +105,34 @@ public class AuthGroup {
 
 	public void setVersion(Long version) {
 		this.version = version;
+	}
+
+
+	/**
+	 * Add role
+	 * @param role {@link AuthRole}
+	 */
+	public void addRole(AuthRole role){
+		if(role!=null){
+			checkRoles();
+			roles.add(role);
+		}
+	}
+
+	/**
+	 * Add role form group
+	 * @param group {@link AuthGroup}
+	 */
+	public void addRoleFromGroup(AuthGroup group) {
+		if(group!=null){
+			checkRoles();
+			roles.addAll(group.getRoles());
+		}
+	}
+
+	private void checkRoles(){
+		if(roles==null){
+			roles=new HashSet<>();
+		}
 	}
 }

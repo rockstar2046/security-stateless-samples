@@ -7,8 +7,14 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.orm.hibernate4.HibernateTransactionManager
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean
 
-def hbProperties = new Properties()
-hbProperties.load(new ClassPathResource('hibernate.properties').inputStream);
+// Hibernate properties
+def hb = new Properties()
+hb.load(new ClassPathResource('hibernate.properties').inputStream);
+
+// Druid properties
+def db = new Properties()
+db.load(new ClassPathResource('db.properties').inputStream);
+
 // Base package
 def basePackage = "com.rockagen.gnext"
 
@@ -32,9 +38,9 @@ beans {
     dataSource(DruidDataSource) { x ->
         x.initMethod = "init"
         x.destroyMethod = "close"
-        url = "jdbc:postgresql://localhost:5432/postgres"
-        username = "postgres"
-        password = "passwd"
+        url = db.getProperty("url")
+        username = db.getProperty("username")
+        password = db.getProperty("password")
         filters = "stat"
         initialSize = 1
         minIdle = 1
@@ -57,7 +63,7 @@ beans {
 
     sessionFactory(LocalSessionFactoryBean) {
         packagesToScan = "com.rockagen.gnext.po"
-        hibernateProperties = hbProperties
+        hibernateProperties = hb
         dataSource = ref("dataSource")
     }
 

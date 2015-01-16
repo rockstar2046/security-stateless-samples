@@ -44,7 +44,7 @@ public class Token {
 
     /**
      * Parse token return partA and partB
-     * @param token
+     * @param token token
      * @return partA is String[0],partB is String[1]
      */
     public static String[] parsePartAB(String token){

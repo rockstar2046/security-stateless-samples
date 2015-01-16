@@ -24,6 +24,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -64,9 +65,6 @@ public class AuthUser {
     @Column(name="LARGE_AVATAR")
     private String largeAvatar;
     
-    @Column(name = "TYPE")
-    private UserType type;
-
     @Column(name = "PHONE")
     private String phone;
 
@@ -118,13 +116,16 @@ public class AuthUser {
     @Column(name = "AUTHENTICATION_TOKEN")
     private String authenticationToken;
 
-    @Column(name = "CREATE_REFERER")
+    @Column(name = "CREATE_USER_REFERER")
     @Enumerated(EnumType.STRING)
-    private UserReferer createReferer;
+    private UserReferer createUserReferer;
 
-    @Column(name = "LAST_REFERER")
+    @Column(name = "LAST_USER_REFERER")
     @Enumerated(EnumType.STRING)
-    private UserReferer lastReferer;
+    private UserReferer lastUserReferer;
+
+    @Column(name = "TYPE")
+    private UserType type;
 
     @ManyToMany(cascade = CascadeType.MERGE,fetch = FetchType.EAGER)
     @JoinTable(name = "AUTH_GROUP_USERS",
@@ -345,20 +346,20 @@ public class AuthUser {
         this.authenticationToken = authenticationToken;
     }
 
-    public UserReferer getCreateReferer() {
-        return createReferer;
+    public UserReferer getCreateUserReferer() {
+        return createUserReferer;
     }
 
-    public void setCreateReferer(UserReferer createReferer) {
-        this.createReferer = createReferer;
+    public void setCreateUserReferer(UserReferer createUserReferer) {
+        this.createUserReferer = createUserReferer;
     }
 
-    public UserReferer getLastReferer() {
-        return lastReferer;
+    public UserReferer getLastUserReferer() {
+        return lastUserReferer;
     }
 
-    public void setLastReferer(UserReferer lastReferer) {
-        this.lastReferer = lastReferer;
+    public void setLastUserReferer(UserReferer lastUserReferer) {
+        this.lastUserReferer = lastUserReferer;
     }
 
     public Set<AuthGroup> getGroups() {
@@ -371,5 +372,33 @@ public class AuthUser {
     
     public boolean enabled(){
         return (this.enabled !=null && this.enabled >0);
+    }
+
+    /**
+     * Add group
+     * @param group {@link AuthGroup}
+     */
+    public void addGroup(AuthGroup group){
+        if(group!=null){
+            checkGroups();
+            groups.add(group);
+        }
+    }
+
+    /**
+     * Add group form user
+     * @param user {@link AuthUser}
+     */
+    public void addGroupFromUser(AuthUser user) {
+        if(user!=null){
+            checkGroups();
+            groups.addAll(user.getGroups());
+        }
+    }
+
+    private void checkGroups(){
+        if(groups==null){
+            groups=new HashSet<>();
+        }
     }
 }

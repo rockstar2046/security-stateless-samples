@@ -32,16 +32,4 @@
            eternal="true"
            overflowToDisk="false"
             />
-    
-    
-    <!-- Spring security role resources -->
-    <cache name="ex.SecurityMetadataSourceCache"
-           maxElementsInMemory="5000"
-           eternal="false"
-           timeToIdleSeconds="180"
-           timeToLiveSeconds="180"
-           overflowToDisk="false"
-           memoryStoreEvictionPolicy="LRU"
-            />
-
 </ehcache>

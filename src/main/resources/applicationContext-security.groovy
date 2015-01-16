@@ -32,8 +32,8 @@ beans{
     HttpSecurityBeanDefinitionParser
     sec{
         // Open api
-        http("use-expressions":true,"pattern":"/public/*","security":"none")
-
+        http("use-expressions":true,pattern:"/public/*",security:"none")
+       
         http("use-expressions":true,"create-session":"stateless","entry-point-ref":"exAuthenticationEntryPoint"){
             anonymous(enabled:false)
 
@@ -45,6 +45,7 @@ beans{
 
             // Before default authentication intercepter
             "custom-filter"(ref:"filterSecurityInterceptor",before:"FILTER_SECURITY_INTERCEPTOR")
+
         }
 
         // Authentication manager,provide to filterSecurityInterceptor filter
@@ -101,21 +102,26 @@ beans{
     }
 
 
-    // Authentication success handler
-    exAuthenticationSuccessHandler(ExAuthenticationSuccessHandler){
-        authUserServ=ref("authUserServ")
-        userReferer="X-Referer"
-        tokenName="X-AUTH-TOKEN"
+    // Authentication handler
+    exAuthenticationHandler(ExAuthenticationHandler){
         exTokenAuthentication=ref("exTokenAuthentication")
-    }
-
-    // Authentication failure handler
-    exAuthenticationFailureHandler(ExAuthenticationFailureHandler){
         authUserServ=ref("authUserServ")
+        tokenName="X-AUTH-TOKEN"
         userReferer="X-Referer"
         username="uid"
         maxFailedAttempts=6
         lockedTime=10800000
+        
+    }
+    // Authentication success handler
+    exAuthenticationSuccessHandler(ExAuthenticationSuccessHandler){
+        exAuthenticationHandler=ref("exAuthenticationHandler")
+    }
+
+    // Authentication failure handler
+    exAuthenticationFailureHandler(ExAuthenticationFailureHandler){
+        exAuthenticationHandler=ref("exAuthenticationHandler")
+
     }
 
     // Using RoleVoter to voter , NOTE: "spring security" has a specific prefix

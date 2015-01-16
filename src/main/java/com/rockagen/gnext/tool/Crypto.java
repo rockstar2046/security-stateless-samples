@@ -15,10 +15,6 @@
  */
 package com.rockagen.gnext.tool;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-
 import com.rockagen.commons.util.CommUtil;
 import com.rockagen.commons.util.MDUtil;
 import org.apache.commons.codec.digest.HmacUtils;

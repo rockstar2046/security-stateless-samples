@@ -27,6 +27,7 @@ import com.rockagen.gnext.tool.Crypto;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -95,16 +96,17 @@ public class ServiceTest {
 	 */
 	private void seedAuthorityService(){
 
+
 		// Resources
 		// all
 		AuthResource rootRes=new AuthResource();
 		rootRes.setPath("/.*");
-		rootRes.setPriority(0);
+		rootRes.setPriority(10000);
 		rootRes.setDescr("all resource");
 		// admin
 		AuthResource adminRes=new AuthResource();
-		adminRes.setPath("/(?!root)/.*");
-		adminRes.setPriority(5);
+		adminRes.setPath("/(?!root/).*");
+		adminRes.setPriority(1000);
 		adminRes.setDescr("admin resource");
 		// message
 		AuthResource messageRes=new AuthResource();
@@ -132,52 +134,45 @@ public class ServiceTest {
 		authResourceServ.add(emailMonthlyRes);
 		authResourceServ.add(messageRes);
 		authResourceServ.add(voiceRes);
-		
-		
+
 		// Roles
-		// root
-		AuthRole rootRole = new AuthRole();
-		rootRole.setName("ROLE_ROOT");
-		rootRole.setDescr("root privileges");
-		Set<AuthResource> rootRess=new HashSet<>();
-		rootRess.add(rootRes);
-		rootRole.setResources(rootRess);
-		// admin
-		AuthRole adminRole = new AuthRole();
-		adminRole.setName("ROLE_ADMIN");
-		adminRole.setDescr("admin privileges");
-		Set<AuthResource> adminRess=new HashSet<>();
-		adminRess.add(adminRes);
-		adminRole.setResources(adminRess);
+
 		// email monthly
 		AuthRole emailMonthlyRole = new AuthRole();
 		emailMonthlyRole.setName("ROLE_EMAIL_MONTHLY");
 		emailMonthlyRole.setDescr("email monthly privileges");
-		Set<AuthResource> emailMonthlyRess=new HashSet<>();
-		emailMonthlyRess.add(emailMonthlyRes);
-		emailMonthlyRole.setResources(emailMonthlyRess);
+		emailMonthlyRole.addResource(emailDailyRes);
 		// email monthly and daily
 		AuthRole emailRole = new AuthRole();
 		emailRole.setName("ROLE_EMAIL");
 		emailRole.setDescr("email monthly and daily privileges");
-		Set<AuthResource> emailRoleRess=new HashSet<>();
-		emailRoleRess.add(emailMonthlyRes);
-		emailRoleRess.add(emailDailyRes);
-		emailRole.setResources(emailRoleRess);
+		emailRole.addResource(emailDailyRes);
+		emailRole.addResourcesFromRole(emailMonthlyRole);
 		// message
 		AuthRole messageRole = new AuthRole();
 		messageRole.setName("ROLE_MESSAGE");
 		messageRole.setDescr("message privileges");
-		Set<AuthResource> messageRess=new HashSet<>();
-		messageRess.add(messageRes);
-		messageRole.setResources(messageRess);
+		messageRole.addResource(messageRes);
 		// voice
 		AuthRole voiceRole = new AuthRole();
 		voiceRole.setName("ROLE_VOICE");
 		voiceRole.setDescr("voice privileges");
-		Set<AuthResource> voiceRess=new HashSet<>();
-		voiceRess.add(voiceRes);
-		voiceRole.setResources(voiceRess);
+		voiceRole.addResource(voiceRes);
+		// admin
+		AuthRole adminRole = new AuthRole();
+		adminRole.setName("ROLE_ADMIN");
+		adminRole.setDescr("admin privileges");
+		adminRole.addResourcesFromRole(messageRole);
+		adminRole.addResourcesFromRole(emailRole);
+		adminRole.addResourcesFromRole(voiceRole);
+		adminRole.addResource(adminRes);
+		// root
+		AuthRole rootRole = new AuthRole();
+		rootRole.setName("ROLE_ROOT");
+		rootRole.setDescr("root privileges");
+		rootRole.addResourcesFromRole(adminRole);
+		rootRole.addResource(rootRes);
+		
 		authRoleServ.add(rootRole);
 		authRoleServ.add(adminRole);
 		authRoleServ.add(emailRole);
@@ -185,47 +180,36 @@ public class ServiceTest {
 		authRoleServ.add(messageRole);
 		authRoleServ.add(voiceRole);
 
+
 		
 		// Groups
 		// root
 		AuthGroup rootGroup=new AuthGroup();
 		rootGroup.setName("root");
 		rootGroup.setDescr("root group");
-		Set<AuthRole> rootRoles=new HashSet<>();
-		rootRoles.add(rootRole);
-		rootGroup.setRoles(rootRoles);
+		rootGroup.addRole(rootRole);
 		// admin
 		AuthGroup adminGroup=new AuthGroup();
 		adminGroup.setName("adm");
 		adminGroup.setDescr("admin group");
-		Set<AuthRole> adminRoles=new HashSet<>();
-		adminRoles.add(adminRole);
-		adminGroup.setRoles(adminRoles);
+		adminGroup.addRole(adminRole);
 		// guestv1
 		AuthGroup guestV1Group=new AuthGroup();
 		guestV1Group.setName("gv1");
 		guestV1Group.setDescr("guest v1 level group");
-		Set<AuthRole> guestV1Roles=new HashSet<>();
-		guestV1Roles.add(emailMonthlyRole);
-		guestV1Group.setRoles(guestV1Roles);		
+		guestV1Group.addRole(emailMonthlyRole);
 		// guestv2
 		AuthGroup guestV2Group=new AuthGroup();
 		guestV2Group.setName("gv2");
 		guestV2Group.setDescr("guest v2 level group");
-		Set<AuthRole> guestV2Roles=new HashSet<>();
-		guestV2Roles.add(emailMonthlyRole);
-		guestV2Roles.add(emailRole);
-		guestV2Group.setRoles(guestV2Roles);
+		guestV2Group.addRole(emailRole);
 		// guestv3
 		AuthGroup guestV3Group=new AuthGroup();
 		guestV3Group.setName("gv3");
 		guestV3Group.setDescr("guest v3 level group");
-		Set<AuthRole> guestV3Roles=new HashSet<>();
-		guestV3Roles.add(emailMonthlyRole);
-		guestV3Roles.add(emailRole);
-		guestV3Roles.add(messageRole);
-		guestV3Roles.add(voiceRole);
-		guestV3Group.setRoles(guestV3Roles);
+		guestV3Group.addRole(messageRole);
+		guestV3Group.addRole(voiceRole);
+		guestV3Group.addRoleFromGroup(guestV2Group);
 		authGroupServ.add(rootGroup);
 		authGroupServ.add(adminGroup);
 		authGroupServ.add(guestV1Group);
@@ -236,29 +220,19 @@ public class ServiceTest {
 		// Users
 		// root user
 		AuthUser root=buildRootUser();
-		Set<AuthGroup> rootGroups=new HashSet<>();
-		rootGroups.add(rootGroup);
-		root.setGroups(rootGroups);
+		root.addGroup(rootGroup);
 		// admin user
 		AuthUser admin=buildAdminUser();
-		Set<AuthGroup> adminGroups=new HashSet<>();
-		adminGroups.add(adminGroup);
-		admin.setGroups(adminGroups);
+		admin.addGroup(adminGroup);
 		// guest v1 user
 		AuthUser guestV1=buildGuestV1();
-		Set<AuthGroup> guestV1Groups=new HashSet<>();
-		guestV1Groups.add(guestV1Group);
-		guestV1.setGroups(guestV1Groups);
+		guestV1.addGroup(guestV1Group);
 		// guest v2 user
 		AuthUser guestV2=buildGuestV2();
-		Set<AuthGroup> guestV2Groups=new HashSet<>();
-		guestV2Groups.add(guestV2Group);
-		guestV2.setGroups(guestV2Groups);
+		guestV2.addGroup(guestV2Group);
 		// guest v3 user
 		AuthUser guestV3=buildGuestV3();
-		Set<AuthGroup> guestV3Groups=new HashSet<>();
-		guestV3Groups.add(guestV3Group);
-		guestV3.setGroups(guestV3Groups);
+		guestV3.addGroup(guestV3Group);
 
 		authUserServ.add(root);
 		authUserServ.add(admin);
@@ -277,7 +251,7 @@ public class ServiceTest {
 		root.setAvatar(getAvatar(root.getEmail()));
 		root.setLargeAvatar(getLargeAvatar(root.getEmail()));
 		root.setCreatedAt(new Date());
-		root.setCreateReferer(UserReferer.LOCAL);
+		root.setCreateUserReferer(UserReferer.LOCAL);
 		root.setEnabled(1);
 		root.setType(UserType.ADMIN);
 		root.setPassword("root");
@@ -293,7 +267,7 @@ public class ServiceTest {
 		admin.setAvatar(getAvatar(admin.getEmail()));
 		admin.setLargeAvatar(getLargeAvatar(admin.getEmail()));
 		admin.setCreatedAt(new Date());
-		admin.setCreateReferer(UserReferer.LOCAL);
+		admin.setCreateUserReferer(UserReferer.LOCAL);
 		admin.setEnabled(1);
 		admin.setType(UserType.ADMIN);
 		admin.setPassword("tom");
@@ -309,7 +283,7 @@ public class ServiceTest {
 		guestV1.setAvatar(getAvatar(guestV1.getEmail()));
 		guestV1.setLargeAvatar(getLargeAvatar(guestV1.getEmail()));
 		guestV1.setCreatedAt(new Date());
-		guestV1.setCreateReferer(UserReferer.LOCAL);
+		guestV1.setCreateUserReferer(UserReferer.LOCAL);
 		guestV1.setEnabled(1);
 		guestV1.setType(UserType.GUEST);
 		guestV1.setPassword("guestv1");
@@ -325,7 +299,7 @@ public class ServiceTest {
 		guestV2.setAvatar(getAvatar(guestV2.getEmail()));
 		guestV2.setLargeAvatar(getLargeAvatar(guestV2.getEmail()));
 		guestV2.setCreatedAt(new Date());
-		guestV2.setCreateReferer(UserReferer.LOCAL);
+		guestV2.setCreateUserReferer(UserReferer.LOCAL);
 		guestV2.setEnabled(1);
 		guestV2.setType(UserType.GUEST);
 		guestV2.setPassword("guestv2");
@@ -341,7 +315,7 @@ public class ServiceTest {
 		guestV3.setAvatar(getAvatar(guestV3.getEmail()));
 		guestV3.setLargeAvatar(getLargeAvatar(guestV3.getEmail()));
 		guestV3.setCreatedAt(new Date());
-		guestV3.setCreateReferer(UserReferer.LOCAL);
+		guestV3.setCreateUserReferer(UserReferer.LOCAL);
 		guestV3.setEnabled(1);
 		guestV3.setType(UserType.GUEST);
 		guestV3.setPassword("guestv3");

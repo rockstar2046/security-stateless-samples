@@ -24,6 +24,7 @@ import com.rockagen.gnext.po.AuthUser;
 import com.rockagen.gnext.service.AuthUserServ;
 import com.rockagen.gnext.vo.UserVO;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import com.rockagen.commons.util.JsonUtil;
@@ -46,8 +47,7 @@ public class UserController extends  ApplicationController{
 	
 	@RequestMapping(value="/{id}",method = RequestMethod.GET)
 	@Plog("show user info")
-	public @NotNull
-	Object show(@PathVariable String id){
+	public Object show(@PathVariable String id){
 		AuthUser a=authUserServ.load(id);
 		UserVO b=new UserVO();
 		b.setName("hello");

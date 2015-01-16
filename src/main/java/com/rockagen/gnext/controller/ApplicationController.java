@@ -20,6 +20,9 @@ import com.rockagen.commons.util.CommUtil;
 import com.rockagen.commons.util.ReflexUtil;
 import com.rockagen.gnext.tool.Token;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -34,11 +37,6 @@ import java.util.regex.Pattern;
  * @since JDK1.8
  */
 public class ApplicationController {
-
-    @Autowired
-    protected HttpServletRequest request;
-    @Autowired
-    protected HttpServletResponse response;
 
     private static final String AUTH_HEADER_NAME = "X-AUTH-TOKEN";
 
@@ -60,13 +58,48 @@ public class ApplicationController {
 
     }
 
+
+    /**
+     * Check errors
+     * @param errors
+     * @return
+     */
+    public boolean hasError(Errors errors){
+        if(errors!=null && errors.hasErrors()){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Handle errors
+     * @param errors
+     * @return
+     */
+    public ErrorMsg error(Errors errors){
+        FieldError e=errors.getFieldError();
+        ErrorMsg em=new ErrorMsg();
+        em.field=e.getField();
+        em.message=e.getDefaultMessage();
+        em.value=e.getRejectedValue();
+        return em;
+        
+    }
     /**
      * Get uid
      * @return uid
      */
-    public String uid(){
+    public String uid(HttpServletRequest request){
         String token=request.getHeader(AUTH_HEADER_NAME);
         return Token.getUidFromToken(token);
+    }
+
+    
+    
+    protected class ErrorMsg{
+        String message;
+        String field;
+        Object value;
     }
     
 }

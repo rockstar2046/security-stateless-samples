@@ -35,7 +35,6 @@ public interface GenericServ<E, Q, PK extends Serializable> {
 	 * @param ids
 	 *            primary key
 	 */
-	@SuppressWarnings("unchecked")
 	void remove(final PK... ids);
 
 	/**

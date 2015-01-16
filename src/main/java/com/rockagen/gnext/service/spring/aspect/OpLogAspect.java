@@ -107,7 +107,12 @@ public class OpLogAspect {
 
 		AuthUser au=authUserServ.load(getUsername());
 		if(au!=null){
-			l.setReferer(au.getLastReferer().value());
+			if(au.getLastUserReferer()!=null){
+			l.setUserReferer(au.getLastUserReferer().value());
+			}
+			if(au.getType()!=null){
+				l.setUserType(au.getType().value());
+			}
 		}
 		mongoTemplate.save(l);
 

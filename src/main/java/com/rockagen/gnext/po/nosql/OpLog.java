@@ -32,9 +32,10 @@ public class OpLog {
     private Date endAt;
     private Long times;
     private String ip;
-    private String referer;
     private Integer result;
     private String message;
+    private String userType;
+    private String userReferer;
 
 
     public String getId() {
@@ -93,12 +94,20 @@ public class OpLog {
         this.ip = ip;
     }
 
-    public String getReferer() {
-        return referer;
+    public String getUserType() {
+        return userType;
     }
 
-    public void setReferer(String referer) {
-        this.referer = referer;
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
+    public String getUserReferer() {
+        return userReferer;
+    }
+
+    public void setUserReferer(String userReferer) {
+        this.userReferer = userReferer;
     }
 
     public Integer getResult() {

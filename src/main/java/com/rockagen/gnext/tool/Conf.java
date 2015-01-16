@@ -15,10 +15,10 @@
  */
 package com.rockagen.gnext.tool;
 
+import com.rockagen.commons.util.CommUtil;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.rockagen.commons.util.CommUtil;
 
 /**
  * Configuration map
@@ -39,7 +39,7 @@ public class Conf {
 	/**
 	 * User Level
 	 */
-	private final static Map<String, String> MAP = new ConcurrentHashMap<String, String>();
+	private final static Map<String, String> MAP = new ConcurrentHashMap<>();
 
 	// ~ Methods ==================================================
 
@@ -59,7 +59,7 @@ public class Conf {
 	 * 
 	 * </p>
 	 * 
-	 * @param map
+	 * @param map map
 	 */
 	public static void init(Map<String, String> map) {
 		// Initialize map
@@ -84,7 +84,7 @@ public class Conf {
 	 * 
 	 * </p>
 	 * 
-	 * @param map
+	 * @param map map
 	 */
 	public static void onChange(Map<String, String> map) {
 
@@ -98,8 +98,8 @@ public class Conf {
 	/**
 	 * Get value
 	 * 
-	 * @param key
-	 * @return
+	 * @param key key
+	 * @return String value
 	 */
 	public static String get(String key) {
 		if (CommUtil.isBlank(key)) {
