@@ -1,14 +1,14 @@
-#security-stateless-samples
+# security-stateless-samples
 
 Spring security stateless restful samples
 
 
 
-####What's feature?
+#### What's feature?
 Stateless restful architecture on based spring-security
 
 
-###Requirements
+### Requirements
 - jdk1.8
 - spring 4.1+
 - spring-security 3.2+
@@ -18,7 +18,7 @@ Stateless restful architecture on based spring-security
 - groovy 2.3+
 
 
-###How-to
+### How-to
 First,run test package ServiceTest.seed() method seed data.
 
 Post `"/authorizations"` with `uid` and `passwd` value to get `X-AUTH-TOKEN` header
@@ -27,10 +27,10 @@ Get `"/users/id"` with `X-AUTH-TOKEN` header to get user info
 
 :)
 
-##Contributing
+## Contributing
 [Pull requests][] are welcome
 
-##License 
+## License 
 [Apache License][].
 
 [Pull requests]: https://help.github.com/articles/using-pull-requests "Pull requests"
