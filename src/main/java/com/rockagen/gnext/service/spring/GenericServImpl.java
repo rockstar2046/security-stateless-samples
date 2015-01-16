@@ -31,7 +31,6 @@ public abstract class GenericServImpl<E, Q, PK extends Serializable> implements
 
 	protected abstract GenericDao<E, PK> getGenericDao();
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void remove(PK... ids) {
 

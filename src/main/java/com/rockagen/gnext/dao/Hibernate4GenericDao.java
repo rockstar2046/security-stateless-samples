@@ -34,12 +34,12 @@ public interface Hibernate4GenericDao<E, PK extends Serializable> extends
 	 * 
 	 * @param dcriteria
 	 *            DetachedCriteria
-	 * @param firstResult
-	 * @param maxResults
-	 * @return
+	 * @param start
+	 * @param count
+	 * @return list
 	 */
 	List<?> queryByCriteria(final DetachedCriteria dcriteria,
-			final int firstResult, final int maxResults);
+			final int start, final int count);
 
 	/**
 	 * Criteria Query

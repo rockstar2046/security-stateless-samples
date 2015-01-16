@@ -19,6 +19,8 @@ import com.rockagen.gnext.enums.UserReferer;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.regex.Pattern;
+
 /**
  * @author RA
  */
@@ -28,6 +30,13 @@ public class ToolsTest {
 	public void testEnum(){
 		Assert.assertEquals(UserReferer.ANDROID.name(), "ANDROID");
 		Assert.assertEquals(UserReferer.ANDROID.value(), "android");
+	}
+	@Test
+	public void testRegx(){
+		String r="/email/daily/.*";
+		Pattern p=Pattern.compile(r);
+		System.out.println(p.matcher("/email/daily/xxx").matches());
+		
 	}
 	
 

@@ -21,7 +21,6 @@ import com.rockagen.gnext.tool.Conf;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.annotation.Resource;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
