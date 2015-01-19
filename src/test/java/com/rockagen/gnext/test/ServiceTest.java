@@ -59,12 +59,9 @@ public class ServiceTest {
 	private AuthRoleServ authRoleServ;
 
 
-	
-	
-	
 	@Test
 	//@Rollback(true)
-	public void seed(){
+	public void seed() {
 		seedKeyValueService();
 		seedAuthorityService();
 	}
@@ -79,13 +76,13 @@ public class ServiceTest {
 		kv.setValue("password,phone");
 		kv.setActive(1);
 		kv.setDescr("Request parameter value to be filtered");
-		
+
 		KeyValue skey=new KeyValue();
 		skey.setKey("spring.security.token.key");
 		skey.setValue("d865542eb3beacad1fa6c5b143db7969");
 		skey.setDescr("Spring security authentication hmac key");
 		skey.setActive(1);
-		
+
 		keyValueServ.add(kv);
 		keyValueServ.add(skey);
 
@@ -172,7 +169,7 @@ public class ServiceTest {
 		rootRole.setDescr("root privileges");
 		rootRole.addResourcesFromRole(adminRole);
 		rootRole.addResource(rootRes);
-		
+
 		authRoleServ.add(rootRole);
 		authRoleServ.add(adminRole);
 		authRoleServ.add(emailRole);
@@ -181,7 +178,7 @@ public class ServiceTest {
 		authRoleServ.add(voiceRole);
 
 
-		
+
 		// Groups
 		// root
 		AuthGroup rootGroup=new AuthGroup();
@@ -216,7 +213,7 @@ public class ServiceTest {
 		authGroupServ.add(guestV2Group);
 		authGroupServ.add(guestV3Group);
 
-		
+
 		// Users
 		// root user
 		AuthUser root=buildRootUser();
@@ -234,19 +231,19 @@ public class ServiceTest {
 		AuthUser guestV3=buildGuestV3();
 		guestV3.addGroup(guestV3Group);
 
-		authUserServ.add(root);
-		authUserServ.add(admin);
-		authUserServ.add(guestV1);
-		authUserServ.add(guestV2);
-		authUserServ.add(guestV3);
+		authUserServ.signup(root);
+		authUserServ.signup(admin);
+		authUserServ.signup(guestV1);
+		authUserServ.signup(guestV2);
+		authUserServ.signup(guestV3);
 	}
 
-	
+
 	private AuthUser buildRootUser(){
 		AuthUser root=new AuthUser();
 		root.setName("Root");
 		root.setUid("root");
-		root.setEmail("root@localhost");
+		root.setEmail("root@localhost.com");
 		root.setAddress("USA");
 		root.setAvatar(getAvatar(root.getEmail()));
 		root.setLargeAvatar(getLargeAvatar(root.getEmail()));
@@ -257,12 +254,12 @@ public class ServiceTest {
 		root.setPassword("root");
 		return root;
 	}
-	
+
 	private AuthUser buildAdminUser() {
 		AuthUser admin = new AuthUser();
 		admin.setName("Tom");
 		admin.setUid("tom");
-		admin.setEmail("tom@localhost");
+		admin.setEmail("tom@localhost.com");
 		admin.setAddress("USA");
 		admin.setAvatar(getAvatar(admin.getEmail()));
 		admin.setLargeAvatar(getLargeAvatar(admin.getEmail()));
@@ -273,12 +270,12 @@ public class ServiceTest {
 		admin.setPassword("tom");
 		return admin;
 	}
-	
+
 	private AuthUser buildGuestV1(){
 		AuthUser guestV1 = new AuthUser();
 		guestV1.setName("Guest V1");
 		guestV1.setUid("guestv1");
-		guestV1.setEmail("guestv1@localhost");
+		guestV1.setEmail("guestv1@localhost.com");
 		guestV1.setAddress("USA");
 		guestV1.setAvatar(getAvatar(guestV1.getEmail()));
 		guestV1.setLargeAvatar(getLargeAvatar(guestV1.getEmail()));
@@ -289,12 +286,12 @@ public class ServiceTest {
 		guestV1.setPassword("guestv1");
 		return guestV1;
 	}
-	
+
 	private AuthUser buildGuestV2(){
 		AuthUser guestV2 = new AuthUser();
 		guestV2.setName("Guest V1");
 		guestV2.setUid("guestv2");
-		guestV2.setEmail("guestv2@localhost");
+		guestV2.setEmail("guestv2@localhost.com");
 		guestV2.setAddress("USA");
 		guestV2.setAvatar(getAvatar(guestV2.getEmail()));
 		guestV2.setLargeAvatar(getLargeAvatar(guestV2.getEmail()));
@@ -304,13 +301,13 @@ public class ServiceTest {
 		guestV2.setType(UserType.GUEST);
 		guestV2.setPassword("guestv2");
 		return guestV2;
-	}	
-	
+	}
+
 	private AuthUser buildGuestV3(){
 		AuthUser guestV3 = new AuthUser();
 		guestV3.setName("Guest V1");
 		guestV3.setUid("guestv3");
-		guestV3.setEmail("guestv3@localhost");
+		guestV3.setEmail("guestv3@localhost.com");
 		guestV3.setAddress("USA");
 		guestV3.setAvatar(getAvatar(guestV3.getEmail()));
 		guestV3.setLargeAvatar(getLargeAvatar(guestV3.getEmail()));
@@ -327,20 +324,20 @@ public class ServiceTest {
 	String avatar_d="d=mm";
 	String avatar_s="s=40";
 	String avatar_ls="s=460";
-	
+
 	private String getAvatar(String email){
 		return avatar(email,avatar_s);
 	}
 	private String getLargeAvatar(String email){
 		return avatar(email,avatar_ls);
 	}
-	
+
 	private String avatar(String email,String sizeMode){
 		return avatar_base+MDUtil.md5Hex(email)+"?"+avatar_d+"&"+sizeMode;
 	}
-	
-	
-	
+
+
+
 
 	@Test
 	@Ignore

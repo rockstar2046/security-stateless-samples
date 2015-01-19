@@ -19,10 +19,10 @@ db.load(new ClassPathResource('db.properties').inputStream);
 def basePackage = "com.rockagen.gnext"
 
 // transaction pointcat expression
-def txExp = "execution(public * com.rockagen.gnext.service.spring.*.*(..))"
+def txExp = "execution(public * ${basePackage}.service.spring.*.*(..))"
 
 // plog pointcat expression
-def plogExp = "execution(public * com.rockagen.gnext.controller..*.*(..))"
+def plogExp = "execution(public * ${basePackage}.controller..*.*(..))"
 
 beans {
     xmlns([
@@ -62,7 +62,7 @@ beans {
     }
 
     sessionFactory(LocalSessionFactoryBean) {
-        packagesToScan = "com.rockagen.gnext.po"
+        packagesToScan = "${basePackage}.po"
         hibernateProperties = hb
         dataSource = ref("dataSource")
     }
