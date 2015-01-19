@@ -20,6 +20,7 @@ import com.rockagen.gnext.po.AuthUser;
 import com.rockagen.gnext.qo.QueryObject;
 import com.rockagen.gnext.service.AuthUserServ;
 import com.rockagen.gnext.tool.Crypto;
+import com.rockagen.gnext.tool.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,9 @@ public class AuthUserServImpl extends
     private static final Logger log = LoggerFactory.getLogger(AuthUserServImpl.class);
 
     @Override
-    public void passwd(final Long id, final String oldPass, final String newPass) {
+    public void passwd(final String uid, final String oldPass, final String newPass) {
 
-        AuthUser po = load(id);
+        AuthUser po = load(uid);
         if (po != null) {
             // Authorized success
             if (Crypto.passwdValid(po.getPassword(),oldPass, po.getSalt())) {
@@ -56,21 +57,42 @@ public class AuthUserServImpl extends
 
     }
 
+
     @Override
-    public AuthUser load(String account) {
-        if (CommUtil.isBlank(account)) {
+    public AuthUser load(String uid) {
+        if (CommUtil.isBlank(uid)) {
             return null;
         }
-        QueryObject qo = new QueryObject();
-        qo.setSql("from AuthUser o where o.uid=:uid");
-        final Map<String, Object> map = new HashMap<String, Object>();
-        map.put("uid", account);
-        qo.setMap(map);
-        List<AuthUser> list = find(qo);
+        List<AuthUser> list = find(buildQueryObjectFromUid(uid));
         if (list == null || list.isEmpty()) {
             return null;
         }
         return list.get(0);
+    }
+
+
+    private QueryObject buildQueryObjectFromUid(String uid) {
+
+        boolean isEmail = CommUtil.isEmail(uid);
+        boolean isPhone = CommUtil.isPhoneNum(uid);
+
+        String field = "uid";
+        if (isEmail) {
+            field = "email";
+        } else if (isPhone) {
+            field = "phone";
+        } else {
+            // XXX
+        }
+
+        QueryObject qo = new QueryObject();
+        qo.setSql("from AuthUser o where o." + field + "=:uid");
+        final Map<String, Object> map = new HashMap<>();
+        map.put("uid", uid);
+        qo.setMap(map);
+        return qo;
+
+
     }
 
 
@@ -81,20 +103,65 @@ public class AuthUserServImpl extends
         po.setPassword(passwd);
     }
 
-    @Override
-    public void add(AuthUser pojo) {
-        if (pojo != null) {
-            // Check uid
-            AuthUser u = load(pojo.getUid());
-            if (u == null) {
-                String salt = Crypto.nextSalt();
-                String passwd = Crypto.passwd(salt, pojo.getPassword());
-                pojo.setSalt(salt);
-                pojo.setPassword(passwd);
-                super.add(pojo);
-            }
 
+    /**
+     * Signup
+     *
+     * @param pojo transient status
+     */
+    @Override
+    public void signup(AuthUser pojo) {
+
+        if (pojo == null) {
+            return;
         }
+
+        String email = pojo.getEmail();
+        String phone = pojo.getPhone();
+        String uid = pojo.getUid();
+        // email
+        if (!Utils.checkEmail(email)) {
+            return;
+        }
+        // phone
+        if (!Utils.checkPhone(phone)) {
+            return;
+        }
+        // username
+        if (!Utils.checkUid(uid)) {
+            return;
+        }
+        // name
+        if (!Utils.checkName(pojo.getName())) {
+            return;
+        }
+        // address
+        if (!Utils.checkAddress(pojo.getAddress())) {
+            return;
+        }
+
+        // lower case
+        email = email.toLowerCase();
+        // email exist
+        if (load(email) != null) {
+            return;
+        }
+        // uid exist
+        if (load(uid) != null) {
+            return;
+        }
+        // phone exist
+        if (CommUtil.isNotBlank(phone) && load(phone) != null) {
+            return;
+        }
+
+        // all passed
+        pojo.setId(null);
+        String salt = Crypto.nextSalt();
+        String passwd = Crypto.passwd(salt, pojo.getPassword());
+        pojo.setSalt(salt);
+        pojo.setPassword(passwd);
+        super.add(pojo);
 
     }
 }

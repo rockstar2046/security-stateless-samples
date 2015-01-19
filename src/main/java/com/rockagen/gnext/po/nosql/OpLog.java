@@ -19,6 +19,7 @@ package com.rockagen.gnext.po.nosql;
 import java.util.Date;
 
 /**
+ * Operation log
  * @author ra
  * @since JDK1.7
  */

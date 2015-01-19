@@ -26,22 +26,31 @@ import com.rockagen.gnext.po.AuthUser;
  */
 public interface AuthUserServ  extends QueryObjectGenericServ<AuthUser, Long>{
 
-	
+
 	/**
 	 * Change the password
-	 * @param po
+	 * @param uid username or email or phone
+	 * @param oldPass old password
+	 * @param newPass new password
 	 */
-	void passwd(final Long id,final String oldPass,final String newPass);
-	
-	
+	void passwd(final String uid,final String oldPass,final String newPass);
+
+
 	/**
 	 * Load by user account
-	 * 
-	 * @param account
-	 *            primary key
+	 *
+	 * @param uid username or email or phone
+	 *
 	 * @return AuthUser
 	 */
-	AuthUser load(final String account);
+	AuthUser load(final String uid);
+
+
+	/**
+	 * Sign up
+	 * @param pojo transient status
+	 */
+	void signup(final AuthUser pojo);
 	
 	
 }
