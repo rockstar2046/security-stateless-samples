@@ -84,7 +84,7 @@ public class ExTokenAuthentication {
                 long now = System.currentTimeMillis();
                 try {
                     // Not expired
-                    if (Long.valueOf(expireTime) > now) {
+                    if (Long.parseLong(expireTime) > now) {
                         AuthUser u = authUserServ.load(uid);
                         if (u != null && u.enabled()) {
                             String passwd = u.getPassword();
