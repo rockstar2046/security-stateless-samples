@@ -19,16 +19,11 @@ import com.rockagen.commons.util.ClassUtil;
 import com.rockagen.commons.util.CommUtil;
 import com.rockagen.commons.util.ReflexUtil;
 import com.rockagen.gnext.tool.Token;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.RequestHeader;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
-import java.util.regex.Pattern;
 
 /**
  * 
@@ -42,17 +37,37 @@ public class ApplicationController {
 
     /**
      * Copy camel style object properties to snake style object properties
-     * @param src
-     * @param desc
+     *
+     * @param camelObj camel style object
+     * @param snakeObj snake style object
      */
-    public void copy(Object src,Object desc){
-        if(desc!=null){
-            Field[] fields= ClassUtil.getDeclaredFields(desc.getClass(),true);
-            for(Field f:fields){
-                String f_name=f.getName();
-                String fName= CommUtil.snake2camel(f_name);
-                Object value=ReflexUtil.getFieldValue(src, fName, true);
-                ReflexUtil.setFieldValue(desc, f_name, value, true);
+    public void copy(Object camelObj, Object snakeObj) {
+        if (snakeObj != null && camelObj!=null) {
+            Field[] fields = ClassUtil.getDeclaredFields(snakeObj.getClass(), true);
+            for (Field f : fields) {
+                String f_name = f.getName();
+                String fName = CommUtil.snake2camel(f_name);
+                Object value = ReflexUtil.getFieldValue(camelObj, fName, true);
+                ReflexUtil.setFieldValue(snakeObj, f_name, value, true);
+            }
+        }
+
+    }
+
+    /**
+     * Copy snake style object properties to camel style object properties
+     *
+     * @param snakeObj snake style object
+     * @param camelObj camel style object
+     */
+    public void copy1(Object snakeObj, Object camelObj) {
+        if (snakeObj != null && camelObj != null) {
+            Field[] fields = ClassUtil.getDeclaredFields(snakeObj.getClass(), true);
+            for (Field f : fields) {
+                String f_name = f.getName();
+                String fName = CommUtil.snake2camel(f_name);
+                Object value = ReflexUtil.getFieldValue(snakeObj, f_name, true);
+                ReflexUtil.setFieldValue(camelObj, fName, value, true);
             }
         }
 
@@ -61,11 +76,12 @@ public class ApplicationController {
 
     /**
      * Check errors
+     *
      * @param errors
      * @return
      */
-    public boolean hasError(Errors errors){
-        if(errors!=null && errors.hasErrors()){
+    public boolean hasError(Errors errors) {
+        if (errors != null && errors.hasErrors()) {
             return true;
         }
         return false;
@@ -73,30 +89,32 @@ public class ApplicationController {
 
     /**
      * Handle errors
+     *
      * @param errors
      * @return
      */
-    public ErrorMsg error(Errors errors){
-        FieldError e=errors.getFieldError();
-        ErrorMsg em=new ErrorMsg();
-        em.field=e.getField();
-        em.message=e.getDefaultMessage();
-        em.value=e.getRejectedValue();
+    public ErrorMsg error(Errors errors) {
+        FieldError e = errors.getFieldError();
+        ErrorMsg em = new ErrorMsg();
+        em.field = e.getField();
+        em.message = e.getDefaultMessage();
+        em.value = e.getRejectedValue();
         return em;
-        
+
     }
+
     /**
      * Get uid
+     *
      * @return uid
      */
-    public String uid(HttpServletRequest request){
-        String token=request.getHeader(AUTH_HEADER_NAME);
+    public String uid(HttpServletRequest request) {
+        String token = request.getHeader(AUTH_HEADER_NAME);
         return Token.getUidFromToken(token);
     }
 
-    
-    
-    protected class ErrorMsg{
+
+    protected static class ErrorMsg {
         String message;
         String field;
         Object value;

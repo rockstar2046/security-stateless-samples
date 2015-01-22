@@ -29,7 +29,6 @@ beans{
             sec : 'http://www.springframework.org/schema/security',
     ])
 
-    HttpSecurityBeanDefinitionParser
     sec{
         // Open api
         http("use-expressions":true,pattern:"/public/*",security:"none")
@@ -148,8 +147,9 @@ beans{
         cacheManager=ref("cacheManager")
         cacheName="ex.SecurityMetadataSourceCache"
     }
+
     // Define spring exception International tips
-    messageSource(ReloadableResourceBundleMessageSource){
-        basename="classpath:security/messages"
+    messageSource(ReloadableResourceBundleMessageSource) {
+        basename = "classpath:security/messages"
     }
 }

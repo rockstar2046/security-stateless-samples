@@ -17,6 +17,7 @@ package com.rockagen.gnext.service.spring;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 import com.rockagen.gnext.dao.GenericDao;
 import com.rockagen.gnext.service.GenericServ;
@@ -32,6 +33,7 @@ public abstract class GenericServImpl<E, Q, PK extends Serializable> implements
 	protected abstract GenericDao<E, PK> getGenericDao();
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void remove(PK... ids) {
 
 		for (PK id : ids) {
@@ -40,12 +42,18 @@ public abstract class GenericServImpl<E, Q, PK extends Serializable> implements
 	}
 
 	@Override
-	public E load(PK id) {
-		return getGenericDao().get(id);
+	public Optional<E> load(PK id) {
+		return Optional.ofNullable(getGenericDao().get(id));
 	}
 
 	@Override
-	public abstract List<E> find(Q queryObject);
+	public abstract List<?> query(Q queryObject);
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<E> find(Q queryObject) {
+		return (List<E>) query(queryObject);
+	}
 	
 
 	@SuppressWarnings("unchecked")

@@ -17,6 +17,7 @@ package com.rockagen.gnext.service;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * GenericServ Support interface
@@ -35,20 +36,30 @@ public interface GenericServ<E, Q, PK extends Serializable> {
 	 * @param ids
 	 *            primary key
 	 */
+	@SuppressWarnings("unchecked")
 	void remove(final PK... ids);
 
 	/**
 	 * Load
-	 * 
+	 *
 	 * @param id
 	 *            primary key
 	 * @return E
 	 */
-	E load(final PK id);
+	Optional<E> load(final PK id);
+
+	/**
+	 * Query by query object
+	 *
+	 * @param queryObject
+	 *            query object
+	 * @return list
+	 */
+	List<?> query(final Q queryObject);
 
 	/**
 	 * find by query object
-	 * 
+	 *
 	 * @param queryObject
 	 *            query object
 	 * @return list

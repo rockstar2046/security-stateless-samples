@@ -64,12 +64,11 @@ public abstract class QueryObjectGenericServImpl<E, PK extends Serializable>
 		daoName = CommUtil.uncapitalize(prefix) + postfix;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<E> find(final QueryObject queryObject) {
+	public List<?> query(final QueryObject queryObject) {
 
 		if (queryObject == null) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		Boolean limit = false;
 		if (queryObject.getSize() > 0) {
@@ -79,37 +78,37 @@ public abstract class QueryObjectGenericServImpl<E, PK extends Serializable>
 		if (!CommUtil.isBlank(queryObject.getSql())) {
 			if (limit) {
 				if (notEmpty(queryObject.getMap())) {
-					return (List<E>) getGenericDao().query(
+					return getGenericDao().query(
 							queryObject.getSql(), queryObject.getIndex(),
 							queryObject.getSize(), queryObject.getMap());
 				} else {
-					return (List<E>) getGenericDao().query(
+					return getGenericDao().query(
 							queryObject.getSql(), queryObject.getIndex(),
 							queryObject.getSize(), queryObject.getArgs());
 				}
 
 			} else {
 				if (notEmpty(queryObject.getMap())) {
-					return (List<E>) getGenericDao().query(
+					return getGenericDao().query(
 							queryObject.getSql(), queryObject.getMap());
 				} else {
-					return (List<E>) getGenericDao().query(
+					return getGenericDao().query(
 							queryObject.getSql(), queryObject.getArgs());
 				}
 
 			}
 		} else if (queryObject.getDetachedCriteria() != null) {
 			if (limit) {
-				return (List<E>) getHibernate4GenericDao().queryByCriteria(
+				return getHibernate4GenericDao().queryByCriteria(
 						queryObject.getDetachedCriteria(),
 						queryObject.getIndex(), queryObject.getSize());
 			} else {
-				return (List<E>) getHibernate4GenericDao().queryByCriteria(
+				return getHibernate4GenericDao().queryByCriteria(
 						queryObject.getDetachedCriteria());
 			}
 		} else {
 			// XXX
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 
 	}
