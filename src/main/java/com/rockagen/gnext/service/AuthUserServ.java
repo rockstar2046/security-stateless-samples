@@ -17,6 +17,7 @@ package com.rockagen.gnext.service;
 
 import com.rockagen.gnext.po.AuthUser;
 
+import java.util.Optional;
 
 
 /**
@@ -43,7 +44,7 @@ public interface AuthUserServ  extends QueryObjectGenericServ<AuthUser, Long>{
 	 *
 	 * @return AuthUser
 	 */
-	AuthUser load(final String uid);
+	Optional<AuthUser> load(final String uid);
 
 
 	/**

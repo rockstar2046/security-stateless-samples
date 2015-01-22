@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Implementation of the <code>AuthUserServ</code> interface
@@ -45,31 +46,28 @@ public class AuthUserServImpl extends
     @Override
     public void passwd(final String uid, final String oldPass, final String newPass) {
 
-        AuthUser po = load(uid);
-        if (po != null) {
+        Optional<AuthUser> user = load(uid);
+        user.ifPresent(po->{
             // Authorized success
-            if (Crypto.passwdValid(po.getPassword(),oldPass, po.getSalt())) {
+            if (Crypto.passwdValid(po.getPassword(), oldPass, po.getSalt())) {
                 newPassword(po, newPass);
             } else {
                 log.warn("User [{}] old password is invalid,not change.", po.getUid());
             }
-        }
-
+        });
     }
-
 
     @Override
-    public AuthUser load(String uid) {
+    public Optional<AuthUser> load(String uid) {
         if (CommUtil.isBlank(uid)) {
-            return null;
+            Optional.empty();
         }
         List<AuthUser> list = find(buildQueryObjectFromUid(uid));
-        if (list == null || list.isEmpty()) {
-            return null;
+        if (list.isEmpty()) {
+            return  Optional.empty();
         }
-        return list.get(0);
+        return Optional.ofNullable(list.get(0));
     }
-
 
     private QueryObject buildQueryObjectFromUid(String uid) {
 
@@ -143,15 +141,15 @@ public class AuthUserServImpl extends
         // lower case
         email = email.toLowerCase();
         // email exist
-        if (load(email) != null) {
+        if (load(email).isPresent()) {
             return;
         }
         // uid exist
-        if (load(uid) != null) {
+        if (load(uid).isPresent()) {
             return;
         }
         // phone exist
-        if (CommUtil.isNotBlank(phone) && load(phone) != null) {
+        if (CommUtil.isNotBlank(phone) && load(phone).isPresent()) {
             return;
         }
 

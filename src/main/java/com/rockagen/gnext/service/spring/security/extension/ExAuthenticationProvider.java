@@ -31,10 +31,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -70,12 +67,12 @@ public class ExAuthenticationProvider extends AbstractUserDetailsAuthenticationP
 
 
     /**
-     * Create a new {@link UserDetails} by uid
+     * Create a new {@link org.springframework.security.core.userdetails.UserDetails} by uid
      *
      * @param uid         uid
      * @param credentials Credentials(always was password)
-     * @return {@link UserDetails}
-     * @throws BadCredentialsException if credentials invalid
+     * @return {@link org.springframework.security.core.userdetails.UserDetails}
+     * @throws org.springframework.security.authentication.BadCredentialsException if credentials invalid
      */
     private UserDetails loadUser(String uid, String credentials) {
 
@@ -84,10 +81,12 @@ public class ExAuthenticationProvider extends AbstractUserDetailsAuthenticationP
             throw new BadCredentialsException(messages.getMessage(
                     "AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
         }
-        
+
         // Load user
-        AuthUser user = authUserServ.load(uid);
-        if (user != null && user.enabled()) {
+        Optional<AuthUser> u=authUserServ.load(uid);
+
+        if(u.filter(x->x.enabled()).isPresent()){
+            AuthUser user=u.get();
             // Check credentials
             checkCredentials(user.getPassword(), credentials, user.getSalt());
 
@@ -105,7 +104,7 @@ public class ExAuthenticationProvider extends AbstractUserDetailsAuthenticationP
             throw new UsernameNotFoundException(messages.getMessage("",
                     new Object[]{uid}, "User {0} has no GrantedAuthority"));
         }
-        
+
     }
 
     /**
@@ -114,7 +113,7 @@ public class ExAuthenticationProvider extends AbstractUserDetailsAuthenticationP
      * @param encPass     - a pre-encoded password
      * @param credentials Credentials(always was password)
      * @param salt        - a salt value.
-     * @throws BadCredentialsException if credentials invalid
+     * @throws org.springframework.security.authentication.BadCredentialsException if credentials invalid
      */
     protected void checkCredentials(String encPass, String credentials, String salt) {
         if (!Crypto.passwdValid(encPass, credentials, salt)) {
@@ -126,7 +125,7 @@ public class ExAuthenticationProvider extends AbstractUserDetailsAuthenticationP
     /**
      * Do something after authenticated
      *
-     * @param user {@link com.rockagen.gnext.po.AuthUser}
+     * @param user {@link org.newland.kserv.po.AuthUser}
      */
     protected void afterAuthenticatedHandler(AuthUser user) {
         // CASE 1: Auto unlocked

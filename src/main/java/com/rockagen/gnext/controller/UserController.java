@@ -48,10 +48,10 @@ public class UserController extends  ApplicationController{
 	@RequestMapping(value="/{id}",method = RequestMethod.GET)
 	@Plog("show user info")
 	public Object show(@PathVariable String id){
-		AuthUser a=authUserServ.load(id);
 		UserVO b=new UserVO();
-		b.setName("hello");
-		copy(a, b);
+		authUserServ.load(id).ifPresent(user -> {
+			copy(user, b);
+		});
 		return b;
 	}
 

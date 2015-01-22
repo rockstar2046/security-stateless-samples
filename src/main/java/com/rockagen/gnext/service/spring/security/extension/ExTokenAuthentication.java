@@ -31,6 +31,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -85,9 +86,10 @@ public class ExTokenAuthentication {
                 try {
                     // Not expired
                     if (Long.parseLong(expireTime) > now) {
-                        AuthUser u = authUserServ.load(uid);
-                        if (u != null && u.enabled()) {
-                            String passwd = u.getPassword();
+
+                        Optional<AuthUser> u = authUserServ.load(uid);
+                        if (u.filter(AuthUser::enabled).isPresent()) {
+                            String passwd = u.get().getPassword();
                             String vhmac = hmac(uid,expireTime,passwd);
                             return partB.equals(vhmac);
                         }
@@ -117,10 +119,10 @@ public class ExTokenAuthentication {
      * @return new token,null if uid not exist or disabled
      */
     public String newToken(String uid) {
-        AuthUser u = authUserServ.load(uid);
+        Optional<AuthUser> u = authUserServ.load(uid);
 
-        if(u!=null && u.enabled()) {
-            String passwd = u.getPassword();
+        if(u.filter(AuthUser::enabled).isPresent()) {
+            String passwd = u.get().getPassword();
             long expirationTime = System.currentTimeMillis() + expiredTime;
 
             String partA = expirationTime + ":" + uid;
@@ -145,7 +147,7 @@ public class ExTokenAuthentication {
     }
 
     /**
-     * Get {@link UserDetails} from token
+     * Get {@link org.springframework.security.core.userdetails.UserDetails} from token
      *
      * @param token token
      * @return {@link org.springframework.security.core.userdetails.UserDetails} if token authenticated,otherwise return null
@@ -153,14 +155,14 @@ public class ExTokenAuthentication {
     public UserDetails getUserDetailsFromToken(String token) {
         if (authenticated(token)) {
             // Load user
-            AuthUser user = authUserServ.load(Token.getUidFromToken(token));
-            if (user != null && user.enabled()) {
+            Optional<AuthUser> user = authUserServ.load(Token.getUidFromToken(token));
+            if (user.filter(AuthUser::enabled).isPresent()) {
                 List<GrantedAuthority> authorities = new LinkedList<>();
-                Set<AuthGroup> groups = user.getGroups();
+                Set<AuthGroup> groups = user.get().getGroups();
                 if (groups != null && groups.size() > 0) {
                     groups.forEach(x -> x.getRoles().forEach(y -> authorities.add(new SimpleGrantedAuthority(y.getName().trim()))));
                 }
-                return new User(user.getUid(), "***", authorities);
+                return new User(user.get().getUid(), "***", authorities);
             }
         }
         return null;

@@ -31,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * Operate log aspect weaver,using <code>Around</code> Mode
@@ -105,15 +106,13 @@ public class OpLogAspect {
 		l.setResult(result);
 		l.setUsername(getUsername());
 
-		AuthUser au=authUserServ.load(getUsername());
-		if(au!=null){
-			if(au.getLastUserReferer()!=null){
-			l.setUserReferer(au.getLastUserReferer().value());
-			}
-			if(au.getType()!=null){
-				l.setUserType(au.getType().value());
-			}
-		}
+		Optional<AuthUser> au=authUserServ.load(getUsername());
+
+		au.ifPresent(x->{
+			Optional.ofNullable(x.getLastUserReferer()).ifPresent(y->l.setUserReferer(y.value()));
+			Optional.ofNullable(x.getType()).ifPresent(y->l.setUserType(y.value()));
+		});
+		
 		mongoTemplate.save(l);
 
 	}
