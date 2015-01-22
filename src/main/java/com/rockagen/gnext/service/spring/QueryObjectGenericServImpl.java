@@ -16,7 +16,9 @@
 package com.rockagen.gnext.service.spring;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -65,8 +67,9 @@ public abstract class QueryObjectGenericServImpl<E, PK extends Serializable>
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<E> find(final QueryObject queryObject) {
+
 		if (queryObject == null) {
-			return null;
+			return Collections.EMPTY_LIST;
 		}
 		Boolean limit = false;
 		if (queryObject.getSize() > 0) {
@@ -75,8 +78,7 @@ public abstract class QueryObjectGenericServImpl<E, PK extends Serializable>
 
 		if (!CommUtil.isBlank(queryObject.getSql())) {
 			if (limit) {
-				if (queryObject.getMap() != null
-						&& !queryObject.getMap().isEmpty()) {
+				if (notEmpty(queryObject.getMap())) {
 					return (List<E>) getGenericDao().query(
 							queryObject.getSql(), queryObject.getIndex(),
 							queryObject.getSize(), queryObject.getMap());
@@ -87,8 +89,7 @@ public abstract class QueryObjectGenericServImpl<E, PK extends Serializable>
 				}
 
 			} else {
-				if (queryObject.getMap() != null
-						&& !queryObject.getMap().isEmpty()) {
+				if (notEmpty(queryObject.getMap())) {
 					return (List<E>) getGenericDao().query(
 							queryObject.getSql(), queryObject.getMap());
 				} else {
@@ -108,9 +109,13 @@ public abstract class QueryObjectGenericServImpl<E, PK extends Serializable>
 			}
 		} else {
 			// XXX
-			return null;
+			return Collections.EMPTY_LIST;
 		}
 
+	}
+
+	private boolean notEmpty(Map e){
+		return e!=null && !e.isEmpty();
 	}
 
 	@Override
