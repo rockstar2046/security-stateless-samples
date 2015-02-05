@@ -24,7 +24,7 @@ apply plugin: 'war'
 apply plugin: 'org.akhikhl.gretty'
 
 group = 'com.rockagen'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2-SNAPSHOT'
 
 
 compileJava {

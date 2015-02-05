@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,23 +18,76 @@ package com.rockagen.gnext.exception;
 import com.rockagen.gnext.enums.ErrorType;
 
 /**
- * System exception
+ * Abstract superclass for all exceptions related to an
+ * {@link SystemException} object being invalid for whatever reason.
  * @author ra
  * @since JDK1.8
  */
-public class SystemException extends SystemRuntimeException {
+public abstract class SystemException extends Exception {
 
     /**
-     * System error type
+     * Error Type
      */
-    private final static ErrorType errorType=ErrorType.SYS0001;
+    private ErrorType errorType;
 
-    public SystemException() {
-        super(errorType);
+    /**
+     * Constructs an {@code SystemException} with the specified message and root cause.
+     *
+     * @param msg the {@link ErrorType}
+     * @param t the root cause
+     */
+    public SystemException(ErrorType msg, Throwable t) {
+        super(msg.name()+": "+msg.value(), t);
+        this.errorType=msg;
     }
 
-    @Override
+    /**
+     * Constructs an {@code SystemException} with the specified message and no root cause.
+     *
+     * @param msg the {@link ErrorType}
+     */
+    public SystemException(ErrorType msg) {
+        super(msg.name()+": "+msg.value());
+        this.errorType=msg;
+    }
+
+    /**
+     * Constructs an {@code SystemException}
+     */
+    public SystemException(){
+        this(ErrorType.SYS0001);
+    }
+
+
+    private ErrorType obtainErrorType(){
+        if(errorType==null){
+            return ErrorType.SYS0001;
+        }
+        return errorType;
+
+    }
+
+    /**
+     * Get error type
+     * @return {@link ErrorType}
+     */
+    public ErrorType getErrorType(){
+        return obtainErrorType();
+    }
+
+    /**
+     * Get error code
+     * @return error code
+     */
     public String getErrorCode() {
-        return errorType.name();
+        return obtainErrorType().name();
+    }
+
+    /**
+     * Get error msg
+     * @return error msg
+     */
+    public String getErrorMsg() {
+        return obtainErrorType().value();
     }
 }
