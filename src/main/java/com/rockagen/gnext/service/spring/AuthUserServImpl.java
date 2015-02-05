@@ -1,11 +1,11 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,11 @@
 package com.rockagen.gnext.service.spring;
 
 import com.rockagen.commons.util.CommUtil;
+import com.rockagen.gnext.bo.AuthUserBO;
+import com.rockagen.gnext.enums.ErrorType;
+import com.rockagen.gnext.enums.UserReferer;
+import com.rockagen.gnext.enums.UserType;
+import com.rockagen.gnext.exception.RegisterException;
 import com.rockagen.gnext.po.AuthUser;
 import com.rockagen.gnext.qo.QueryObject;
 import com.rockagen.gnext.service.AuthUserServ;
@@ -25,10 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Implementation of the <code>AuthUserServ</code> interface
@@ -44,19 +46,31 @@ public class AuthUserServImpl extends
     private static final Logger log = LoggerFactory.getLogger(AuthUserServImpl.class);
 
     @Override
-    public void passwd(final String uid, final String oldPass, final String newPass) {
+    public boolean passwd(final String uid, final String oldPass, final String newPass) {
 
         Optional<AuthUser> user = load(uid);
-        user.ifPresent(po->{
+        if (user.isPresent()) {
+            AuthUser po = user.get();
             // Authorized success
             if (Crypto.passwdValid(po.getPassword(), oldPass, po.getSalt())) {
                 newPassword(po, newPass);
+                return true;
             } else {
                 log.warn("User [{}] old password is invalid,not change.", po.getUid());
             }
-        });
+        }
+        return false;
     }
 
+    @Override
+    public boolean auth(String uid, String passwd) {
+        Optional<AuthUser> user = load(uid);
+        if(user.isPresent()){
+            return Crypto.passwdValid(user.get().getPassword(),passwd,user.get().getSalt());
+        }
+        return false;
+    }
+    
     @Override
     public Optional<AuthUser> load(String uid) {
         if (CommUtil.isBlank(uid)) {
@@ -71,8 +85,8 @@ public class AuthUserServImpl extends
 
     private QueryObject buildQueryObjectFromUid(String uid) {
 
-        boolean isEmail = CommUtil.isEmail(uid);
-        boolean isPhone = CommUtil.isPhoneNum(uid);
+        boolean isEmail = Utils.isEmail(uid);
+        boolean isPhone = Utils.isPhoneNum(uid);
 
         String field = "uid";
         if (isEmail) {
@@ -103,63 +117,92 @@ public class AuthUserServImpl extends
 
 
     /**
-     * Signup
+     * Sign up,phone must not null
      *
-     * @param pojo transient status
+     * @param bo bo
+     * @throws RegisterException
      */
-    @Override
-    public void signup(AuthUser pojo) {
+    public void signup(AuthUserBO bo) throws RegisterException {
 
-        if (pojo == null) {
-            return;
+        if (bo == null) {
+            throw new RegisterException();
         }
 
-        String email = pojo.getEmail();
-        String phone = pojo.getPhone();
-        String uid = pojo.getUid();
+        String email = bo.getEmail();
+        String phone = bo.getPhone();
+        String uid = bo.getUid();
         // email
         if (!Utils.checkEmail(email)) {
-            return;
+            throw new RegisterException(ErrorType.REG0010);
         }
         // phone
         if (!Utils.checkPhone(phone)) {
-            return;
+            throw new RegisterException(ErrorType.REG0020);
         }
         // username
         if (!Utils.checkUid(uid)) {
-            return;
+            throw new RegisterException(ErrorType.REG0030);
         }
         // name
-        if (!Utils.checkName(pojo.getName())) {
-            return;
+        if (!Utils.checkName(bo.getName())) {
+            throw new RegisterException(ErrorType.REG0040);
         }
         // address
-        if (!Utils.checkAddress(pojo.getAddress())) {
-            return;
+        if (!Utils.checkAddress(bo.getAddress())) {
+            throw new RegisterException(ErrorType.REG0050);
         }
 
-        // lower case
-        email = email.toLowerCase();
-        // email exist
-        if (load(email).isPresent()) {
-            return;
+        if (CommUtil.isNotBlank(email)) {
+            // lower case
+            email = email.toLowerCase();
+            // email exist
+
+            if (load(email).isPresent()) {
+                throw new RegisterException(ErrorType.REG0011);
+            }
         }
+
         // uid exist
         if (load(uid).isPresent()) {
-            return;
+            throw new RegisterException(ErrorType.REG0031);
         }
         // phone exist
-        if (CommUtil.isNotBlank(phone) && load(phone).isPresent()) {
-            return;
+        if (CommUtil.isNotBlank(uid) && load(phone).isPresent()) {
+            throw new RegisterException(ErrorType.REG0021);
         }
 
+        String password = bo.getPassword();
         // all passed
-        pojo.setId(null);
-        String salt = Crypto.nextSalt();
-        String passwd = Crypto.passwd(salt, pojo.getPassword());
-        pojo.setSalt(salt);
-        pojo.setPassword(passwd);
-        super.add(pojo);
+        AuthUser po = new AuthUser();
+        Utils.copy(bo, po);
 
+
+        // if avatar null
+        if (po.getLargeAvatar() == null) {
+            po.setLargeAvatar(Utils.getLargeAvatar(email));
+            po.setAvatar(Utils.getAvatar(email));
+        }
+
+        // if user type null
+        if (po.getType() == null) {
+            po.setType(UserType.GUEST);
+        }
+        // if user referer null
+        if (po.getCreateUserReferer() == null) {
+            po.setCreateUserReferer(UserReferer.UNKNOWN);
+        }
+
+
+        Date now = new Date();
+        po.setCreatedAt(now);
+        po.setEnabled(1);
+        po.setEnabledAt(now);
+        po.setSignInCount(0);
+        String salt = Crypto.nextSalt();
+        String passwd = Crypto.passwd(salt, password);
+        po.setSalt(salt);
+        po.setPassword(passwd);
+        super.add(po);
     }
+
 }
