@@ -16,11 +16,11 @@
 package com.rockagen.gnext.dao.hb;
 
 import com.rockagen.commons.util.CommUtil;
-import com.rockagen.commons.util.ReflexUtil;
 import com.rockagen.gnext.annotation.Pcache;
 import com.rockagen.gnext.dao.Hibernate4GenericDao;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.criterion.DetachedCriteria;
 
 import java.io.Serializable;
@@ -33,8 +33,7 @@ import java.util.Map;
  * @author RA
  * @see Hibernate4GenericDao
  */
-public class Hibernate4GenericDaoImpl <E, PK extends Serializable>
-extends BaseDao implements Hibernate4GenericDao<E, PK>{
+public abstract class Hibernate4GenericDaoImpl <E, PK extends Serializable> implements Hibernate4GenericDao<E, PK>{
 
 	// ~ Instance fields ==================================================
 
@@ -57,7 +56,7 @@ extends BaseDao implements Hibernate4GenericDao<E, PK>{
 	@Override
 	public void delete(E pojo) {
 		if (pojo != null) {
-			super.getSession().delete(pojo);
+			getSession().delete(pojo);
 		}
 
 	}
@@ -66,7 +65,7 @@ extends BaseDao implements Hibernate4GenericDao<E, PK>{
 	@Override
 	public E get(PK id) {
 		if (id != null) {
-			return (E) super.getSession().get(getEntityClass(), id);
+			return (E) getSession().get(getEntityClass(), id);
 		}
 		return null;
 	}
@@ -86,7 +85,7 @@ extends BaseDao implements Hibernate4GenericDao<E, PK>{
 		if (CommUtil.isBlank(hql)) {
 			hql = QUERY_ALL;
 		}
-		Query query = super.getSession().createQuery(hql).setCacheable(isCacheable());
+		Query query = getSession().createQuery(hql).setCacheable(isCacheable());
 		
 		if (start > 0) {
 			query.setFirstResult(start);
@@ -122,7 +121,7 @@ extends BaseDao implements Hibernate4GenericDao<E, PK>{
 		if (dcriteria == null) {
 			dcriteria = DetachedCriteria.forClass(getEntityClass());
 		}
-		Criteria criteria = dcriteria.getExecutableCriteria(super.getSession());
+		Criteria criteria = dcriteria.getExecutableCriteria(getSession());
 		if (start > 0) {
 			criteria.setFirstResult(start);
 		}
@@ -183,7 +182,7 @@ extends BaseDao implements Hibernate4GenericDao<E, PK>{
 	public void save(E pojo) {
 		if (pojo != null) {
 			//XXX  not ideal
-			super.getSession().saveOrUpdate(pojo);
+			getSession().saveOrUpdate(pojo);
 		}
 
 	}
@@ -197,12 +196,19 @@ extends BaseDao implements Hibernate4GenericDao<E, PK>{
 	private boolean isCacheable(){
 		return getEntityClass().isAnnotationPresent(Pcache.class);
 	}
-	
-	@SuppressWarnings("unchecked")
-	protected Class<E> getEntityClass() {
-		return (Class<E>) ReflexUtil.getSuperClassGenricClass(getClass(), 0);
-	}
 
+
+    /**
+     * Get entity class
+     * @return {@link java.lang.Class}
+     */
+    protected abstract Class<E> getEntityClass();
+
+    /**
+     * Get session
+     * @return {@link org.hibernate.Session}
+     */
+    protected abstract Session getSession();
 
 	
 }

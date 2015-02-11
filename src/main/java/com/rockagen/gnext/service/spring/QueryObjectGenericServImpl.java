@@ -26,118 +26,115 @@ import com.rockagen.commons.util.CommUtil;
 import com.rockagen.commons.util.ReflexUtil;
 import com.rockagen.gnext.dao.GenericDao;
 import com.rockagen.gnext.dao.Hibernate4GenericDao;
+import com.rockagen.gnext.dao.hb.Hibernate4GenericDaoImpl;
 import com.rockagen.gnext.qo.QueryObject;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.jdbc.datasource.lookup.DataSourceLookupFailureException;
 
 /**
  * Implementation of the <code>ObjectQueryGenericServ</code> interface
- * 
+ *
  * @author RA
  * @see GenericServImpl
  */
 public abstract class QueryObjectGenericServImpl<E, PK extends Serializable>
-		extends GenericServImpl<E, QueryObject, PK> {
+        extends GenericServImpl<E, QueryObject, PK> {
 
-	/**
-	 * Spring Context helper
-	 */
-	@Resource
-	private SpringContextHelper springContextHelper;
+    @Resource
+    private SessionFactory sessionFactory;
 
-	private String daoName;
+    @Override
+    public List<?> query(final QueryObject queryObject) {
 
-	// ~ Constructors ==================================================
+        if (queryObject == null) {
+            return Collections.emptyList();
+        }
+        Boolean limit = false;
+        if (queryObject.getSize() > 0) {
+            limit = true;
+        }
 
-	/**
-	 * Construct a default dao instance bean name
-	 * <p>
-	 * <b>note: The default bean name should be xXxxDao.</b>
-	 * </p>
-	 * 
-	 * <pre>
-	 * example: userDao,authUserDao...
-	 * </pre>
-	 */
-	public QueryObjectGenericServImpl() {
-		String postfix = "Dao";
-		String prefix = ReflexUtil.getSuperClassGenricClass(getClass(), 0)
-				.getSimpleName();
-		daoName = CommUtil.uncapitalize(prefix) + postfix;
-	}
+        if (!CommUtil.isBlank(queryObject.getSql())) {
+            if (limit) {
+                if (notEmpty(queryObject.getMap())) {
+                    return getGenericDao().query(
+                            queryObject.getSql(), queryObject.getIndex(),
+                            queryObject.getSize(), queryObject.getMap());
+                } else {
+                    return getGenericDao().query(
+                            queryObject.getSql(), queryObject.getIndex(),
+                            queryObject.getSize(), queryObject.getArgs());
+                }
 
-	@Override
-	public List<?> query(final QueryObject queryObject) {
+            } else {
+                if (notEmpty(queryObject.getMap())) {
+                    return getGenericDao().query(
+                            queryObject.getSql(), queryObject.getMap());
+                } else {
+                    return getGenericDao().query(
+                            queryObject.getSql(), queryObject.getArgs());
+                }
 
-		if (queryObject == null) {
-			return Collections.emptyList();
-		}
-		Boolean limit = false;
-		if (queryObject.getSize() > 0) {
-			limit = true;
-		}
+            }
+        } else if (queryObject.getDetachedCriteria() != null) {
+            if (limit) {
+                return getHibernate4GenericDao().queryByCriteria(
+                        queryObject.getDetachedCriteria(),
+                        queryObject.getIndex(), queryObject.getSize());
+            } else {
+                return getHibernate4GenericDao().queryByCriteria(
+                        queryObject.getDetachedCriteria());
+            }
+        } else {
+            // XXX
+            return Collections.emptyList();
+        }
 
-		if (!CommUtil.isBlank(queryObject.getSql())) {
-			if (limit) {
-				if (notEmpty(queryObject.getMap())) {
-					return getGenericDao().query(
-							queryObject.getSql(), queryObject.getIndex(),
-							queryObject.getSize(), queryObject.getMap());
-				} else {
-					return getGenericDao().query(
-							queryObject.getSql(), queryObject.getIndex(),
-							queryObject.getSize(), queryObject.getArgs());
-				}
+    }
 
-			} else {
-				if (notEmpty(queryObject.getMap())) {
-					return getGenericDao().query(
-							queryObject.getSql(), queryObject.getMap());
-				} else {
-					return getGenericDao().query(
-							queryObject.getSql(), queryObject.getArgs());
-				}
+    private boolean notEmpty(Map e) {
+        return e != null && !e.isEmpty();
+    }
 
-			}
-		} else if (queryObject.getDetachedCriteria() != null) {
-			if (limit) {
-				return getHibernate4GenericDao().queryByCriteria(
-						queryObject.getDetachedCriteria(),
-						queryObject.getIndex(), queryObject.getSize());
-			} else {
-				return getHibernate4GenericDao().queryByCriteria(
-						queryObject.getDetachedCriteria());
-			}
-		} else {
-			// XXX
-			return Collections.emptyList();
-		}
+    @Override
+    public GenericDao<E, PK> getGenericDao() {
+        return getHibernate4GenericDao();
+    }
 
-	}
 
-	private boolean notEmpty(Map e){
-		return e!=null && !e.isEmpty();
-	}
+    private Hibernate4GenericDao<E, PK> getHibernate4GenericDao() {
+        return new Hibernate4GenericDaoImpl<E, PK>() {
 
-	@Override
-	public GenericDao<E, PK> getGenericDao() {
-		return getHibernate4GenericDao();
-	}
+            @Override
+            protected Class<E> getEntityClass() {
+                return obtainEntityClass();
+            }
 
-	/**
-	 * Auto detect ibernate dao instance
-	 * <p>
-	 * <b>note: The default bean name should be xXxxDao.</b>
-	 * </p>
-	 * 
-	 * <pre>
-	 * example: userDao,authUserDao...
-	 * </pre>
-	 * 
-	 * @return Hibernate4GenericDao&lt;E, PK&gt;
-	 */
-	@SuppressWarnings("unchecked")
-	protected Hibernate4GenericDao<E, PK> getHibernate4GenericDao() {
-		return (Hibernate4GenericDao<E, PK>) springContextHelper
-				.getBean(daoName);
-	}
+            @Override
+            protected Session getSession() {
+                return obtainSession();
+            }
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    protected Class<E> obtainEntityClass() {
+        return (Class<E>) ReflexUtil.getSuperClassGenricClass(getClass(), 0);
+    }
+
+    /**
+     * Get Session
+     *
+     * @return session
+     */
+    private Session obtainSession() {
+        if (sessionFactory == null) {
+            throw new DataSourceLookupFailureException("sessionFactory must not be empty or null");
+        }
+        return sessionFactory.getCurrentSession();
+
+    }
+
 
 }

@@ -27,7 +27,12 @@ import com.rockagen.gnext.po.AuthRole;
 import com.rockagen.gnext.po.KeyValue;
 import com.rockagen.gnext.service.*;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -35,7 +40,11 @@ import javax.annotation.Resource;
  * @author ra
  * @since JDK1.8
  */
-public class Seed extends BaseTest{
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration({"/applicationContext.groovy"})
+@TransactionConfiguration(transactionManager = "txManager", defaultRollback = true)
+@Transactional
+public class Seed{
 
     @Resource
     private KeyValueServ keyValueServ;
