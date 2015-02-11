@@ -38,7 +38,7 @@ public class ServiceTest extends BaseTest{
     public void testKeyValue(){
         List<KeyValue> kvs=keyValueServ.findAll();
         kvs.stream().forEach(x->{
-            System.out.println(x.getKey()+": "+x.getValue());});
+            System.err.println(x.getKey()+": "+x.getValue());});
 
     }
 

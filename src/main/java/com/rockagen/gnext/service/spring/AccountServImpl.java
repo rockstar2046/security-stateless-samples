@@ -66,8 +66,11 @@ public class AccountServImpl extends QueryObjectGenericServImpl<Account, Long> i
      * @return Account
      */
     private Optional<Account> filter(List<Account> list) {
-        Account tmp = list.stream().filter(x -> x.getStatus() == AccountStatus.OPEN)
-                .min((a, b) -> a.getPriority().compareTo(b.getPriority())).get();
+        Account tmp=list.get(0);
+        if(list.size()>1) {
+            tmp = list.stream().filter(x -> x.getStatus() == AccountStatus.OPEN)
+                    .min((a, b) -> a.getPriority().compareTo(b.getPriority())).get();
+        }
         return Optional.ofNullable(tmp);
 
     }
